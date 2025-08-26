@@ -10,15 +10,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Warm Neutrals (Stone, Sky Blue, Teal) -->
-    <!-- Application Structure Plan: A user-journey-based SPA with six thematic, interactive sections in Hindi: 1. अवलोकन, 2. प्रक्रियाएं समझें (dynamic content + chart), 3. आमने-सामने तुलना, 4. विशेषज्ञ खोजें (interactive cards), 5. लागत की जानकारी (chart), 6. परामर्श गाइड. This structure breaks down the dense report into digestible, task-oriented modules, prioritizing user exploration and decision support over a linear document format. -->
-    <!-- Visualization & Content Choices: 1. Clinical Data -> Goal: Compare -> Viz: Interactive Bar Chart (Chart.js) -> Interaction: Update on procedure selection -> Justification: Visually compares key recovery metrics for faster comprehension. 2. Cost Data -> Goal: Inform -> Viz: Horizontal Bar Chart (Chart.js) -> Interaction: Hover tooltips -> Justification: Clearly shows cost ranges and overlaps. 3. Doctors/Hospitals -> Goal: Organize -> Presentation: Clickable HTML/CSS Cards -> Interaction: Toggle to show details -> Justification: Interactive directory for easy exploration. CONFIRMED: All visuals use Chart.js (Canvas) or styled HTML. -->
+    <!-- Application Structure Plan: A user-journey-based SPA with six thematic, interactive sections in Hindi: 1. अवलोकन, 2. प्रक्रियाएं समझें (dynamic content + chart), 3. आमने-सामने तुलना, 4. विशेषज्ञ खोजें (interactive cards + comparative table), 5. लागत की जानकारी (chart), 6. परामर्श गाइड. This structure breaks down the dense report into digestible, task-oriented modules, prioritizing user exploration and decision support over a linear document format. -->
+    <!-- Visualization & Content Choices: 1. Clinical Data -> Goal: Compare -> Viz: Interactive Bar Chart (Chart.js) -> Interaction: Update on procedure selection -> Justification: Visually compares key recovery metrics for faster comprehension. 2. Cost Data -> Goal: Inform -> Viz: Horizontal Bar Chart (Chart.js) -> Interaction: Hover tooltips -> Justification: Clearly shows cost ranges and overlaps. 3. Doctors/Hospitals -> Goal: Organize -> Presentation: Clickable HTML/CSS Cards + Static HTML Table -> Interaction: Toggle to show details -> Justification: Interactive directory for easy exploration and structured comparison of key doctor attributes. CONFIRMED: All visuals use Chart.js (Canvas) or styled HTML. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc; /* slate-50 */
         }
-        .chart-container {
+       .chart-container {
             position: relative;
             width: 100%;
             max-width: 700px;
@@ -28,38 +28,38 @@
             max-height: 40vh;
         }
         @media (min-width: 768px) {
-            .chart-container {
+           .chart-container {
                 height: 400px;
             }
         }
-        .nav-link {
+       .nav-link {
             transition: all 0.3s ease;
         }
-        .nav-link.active {
+       .nav-link.active {
             background-color: #0284c7; /* sky-600 */
             color: white;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
-        .content-section {
+       .content-section {
             display: none;
         }
-        .content-section.active {
+       .content-section.active {
             display: block;
         }
-        .specialist-card {
+       .specialist-card {
             transition: all 0.3s ease;
             cursor: pointer;
         }
-        .specialist-card:hover {
+       .specialist-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         }
-        .details {
+       .details {
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.5s ease-in-out;
         }
-        .details.open {
+       .details.open {
             max-height: 1000px;
         }
     </style>
@@ -179,6 +179,28 @@
                 
                 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="specialist-grid">
                 </div>
+
+                <div class="mt-12">
+                    <h3 class="text-xl font-bold text-sky-800 mb-4">प्रमुख यूरोलॉजिस्ट की तुलना</h3>
+                    <p class="mb-6 text-slate-700">यह तालिका आपको नोएडा और आसपास के क्षेत्र के कुछ शीर्ष यूरोलॉजिस्टों की योग्यता, अनुभव और विशेषज्ञता की तुलना करने में मदद करती है। अपने लिए सबसे उपयुक्त डॉक्टर चुनने के लिए इस जानकारी का उपयोग करें।</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr>
+                                    <th class="py-3 px-4 bg-slate-100 font-semibold text-slate-700 border-b-2 border-slate-200">डॉक्टर का नाम</th>
+                                    <th class="py-3 px-4 bg-slate-100 font-semibold text-slate-700 border-b-2 border-slate-200">अस्पताल</th>
+                                    <th class="py-3 px-4 bg-slate-100 font-semibold text-slate-700 border-b-2 border-slate-200">अनुभव</th>
+                                    <th class="py-3 px-4 bg-slate-100 font-semibold text-slate-700 border-b-2 border-slate-200">शिक्षा व अल्मा मेटर</th>
+                                    <th class="py-3 px-4 bg-slate-100 font-semibold text-slate-700 border-b-2 border-slate-200">विशेषज्ञता (BPH संबंधित)</th>
+                                    <th class="py-3 px-4 bg-slate-100 font-semibold text-slate-700 border-b-2 border-slate-200">उपलब्धियाँ और मान्यता</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-slate-700" id="doctors-comparative-table-body">
+                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -233,7 +255,7 @@
             const procedureData = {
                 holep: {
                     title: 'होलमियम लेजर एन्यूक्लिएशन ऑफ द प्रोस्टेट (HoLEP)',
-                    description: 'HoLEP एक न्यूनतम इनवेसिव प्रक्रिया है जो मूत्र संबंधी रुकावट पैदा करने वाले प्रोस्टेट ऊतक के पूरे हिस्से को सटीक रूप से छीलने और हटाने के लिए एक उच्च-शक्ति वाले होलमियम लेजर का उपयोग करती है। यह शारीरिक एन्यूक्लिएशन पारंपरिक ओपन सर्जरी के परिणामों की नकल करता है, लेकिन बिना किसी बाहरी चीरे के मूत्रमार्ग के माध्यम से किया जाता है।',
+                    description: 'HoLEP एक न्यूनतम इनवेसिव प्रक्रिया है जो मूत्र संबंधी रुकावट पैदा करने वाले प्रोस्टेट ऊतक के पूरे हिस्से को सटीक रूप से छीलने और हटाने के लिए एक उच्च-शक्ति वाले होलमियम लेजर का उपयोग करती है। यह शारीरिक एन्यूक्लिएशन पारंपरिक ओपन सर्जरी के परिणामों की नकल करता है, लेकिन बिना किसी बाहरी चीरे के मूत्रमार्ग के माध्यम से किया जाता है। हटाए गए ऊतक को फिर छोटे-छोटे टुकड़ों में काट दिया जाता है और बाहर निकाल दिया जाता है, और प्रयोगशाला विश्लेषण के लिए भेजा जा सकता है।',
                     advantages: [
                         'कम पुन: उपचार दरों के साथ टिकाऊ, लंबे समय तक चलने वाला समाधान।',
                         'किसी भी आकार के प्रोस्टेट के लिए प्रभावी।',
@@ -266,38 +288,132 @@
             const specialistsData = [
                 {
                     type: 'doctor',
+                    name: 'डॉ. राजेश अहलावत',
+                    title: 'ग्रुप चेयरमैन - यूरोलॉजी एवं प्रोस्टेट कैंसर सेंटर ऑफ एक्सीलेंस',
+                    hospital: 'मेदांता - द मेडिसिटी, गुरुग्राम',
+                    experience: '40+ साल का अनुभव',
+                    education: 'MBBS, MS (किंग जॉर्ज मेडिकल कॉलेज, लखनऊ), MCh (AIIMS, नई दिल्ली), MNAMS, चक्रवर्ती फैलोशिप (IAUA), पीएन बेरी फैलोशिप',
+                    specialty: 'रोबोटिक सर्जरी (प्रोस्टेटेक्टॉमी, पायलोप्लास्टी, आंशिक नेफरेक्टॉमी), रीनल ट्रांसप्लांट, यूरो-ऑन्कोलॉजी, एंडो-यूरोलॉजी, लैप्रोस्कोपिक सर्जरी',
+                    awards: 'रोबोटिक किडनी प्रत्यारोपण का नेतृत्व किया (विश्व में पहला); 2016 में यूरोलॉजिकल सोसाइटी ऑफ इंडिया का प्रेसिडेंट्स गोल्ड मेडल; 58+ प्रकाशन',
+                    ratings: 'Vaidam पर 4.9/5 (36 रेटिंग), JustDial पर 3.6/5 (27 रेटिंग)',
+                    testimonial: 'भारतीय यूरोलॉजी में एक अग्रणी व्यक्ति, कई सफल रोबोटिक और लैप्रोस्कोपिक सर्जरी के लिए जाने जाते हैं।',
+                    color: 'sky'
+                },
+                {
+                    type: 'doctor',
                     name: 'डॉ. अतुल गर्ग',
                     title: 'कंसल्टेंट यूरो सर्जन',
                     hospital: 'कैलाश हॉस्पिटल, नोएडा',
-                    experience: '10,000+ लेजर प्रोस्टेट सर्जरी (HoLEP/ThuLEP), 20,000+ न्यूनतम इनवेसिव स्टोन रिमूवल।',
-                    testimonial: 'एक मरीज के दादाजी "हमेशा उनकी प्रशंसा करते हैं" और "इस महान डॉक्टर के बारे में हर रिश्तेदार से ऊंची बातें करना कभी बंद नहीं करते"।',
+                    experience: '13+ साल का अनुभव',
+                    education: 'MS, MCh (यूरोलॉजी)',
+                    specialty: 'लेजर प्रोस्टेट सर्जरी (HoLEP/ThuLEP), न्यूनतम इनवेसिव स्टोन रिमूवल (RIRS, PCNL), लैप्रोस्कोपिक यूरोलॉजी, यूरो-ऑन्कोलॉजिकल सर्जरी, रीनल ट्रांसप्लांट',
+                    awards: 'Da Vinci Xi सिस्टम पर रोबोटिक सर्जरी में प्रशिक्षित; कई राष्ट्रीय प्रकाशन',
+                    ratings: 'N/A',
+                    testimonial: '10,000+ लेजर प्रोस्टेट सर्जरी और 20,000+ मिनिमल इनवेसिव स्टोन रिमूवल।',
                     color: 'sky'
                 },
                 {
                     type: 'doctor',
                     name: 'डॉ. वेंकटेश कुमार',
                     title: 'सीनियर कंसल्टेंट यूरोलॉजिस्ट और रोबोटिक सर्जन',
-                    hospital: 'यथार्थ सुपर स्पेशलिटी हॉस्पिटल',
-                    experience: '10+ साल का अनुभव, रोबोटिक सर्जरी में वट्टिकुटी स्कॉलर। नियमित रूप से थुलियम लेजर प्रोस्टेट सर्जरी करते हैं।',
+                    hospital: 'यथार्थ सुपर स्पेशलिटी हॉस्पिटल, ग्रेटर नोएडा',
+                    experience: '14+ साल का अनुभव',
+                    education: 'MBBS (आर्मेनिया), MS (सर्जरी), DNB (यूरोलॉजी)',
+                    specialty: 'लेजर प्रोस्टेट सर्जरी (HoLEP/ThuLEP), रोबोटिक सर्जरी, एंडोयूरोलॉजी (TURP, URS, RIRS, PCNL), यूओ-ऑन्कोलॉजी',
+                    awards: 'वट्टिकुटी स्कॉलरशिप (रोबोटिक सर्जरी); 5,000+ यूरोलॉजिकल सर्जरी',
+                    ratings: '98% रोगी सिफारिश (95 रेटिंग)',
                     testimonial: 'नवीनतम थुलियम लेजर का उपयोग करने और 5,000 से अधिक सफल यूरोलॉजिकल सर्जरी करने के लिए जाने जाते हैं।',
                      color: 'sky'
-                },
-                {
-                    type: 'doctor',
-                    name: 'डॉ. विमल दासी',
-                    title: 'सीनियर डायरेक्टर - यूरोलॉजी, यूरो-ऑन्कोलॉजी',
-                    hospital: 'मैक्स मल्टी स्पेशलिटी सेंटर, नोएडा',
-                    experience: 'यूरोलॉजी, रोबोटिक्स और किडनी प्रत्यारोपण में 17+ साल का अनुभव। ATLAS प्रमाणित रोबोटिक सर्जन।',
-                    testimonial: 'मैक्स हेल्थकेयर में यूरोलॉजी और किडनी प्रत्यारोपण विभाग के प्रमुख के रूप में कार्यरत।',
-                    color: 'sky'
                 },
                 {
                     type: 'doctor',
                     name: 'डॉ. पंकज वधवा',
                     title: 'सीनियर डायरेक्टर - यूरो-ऑन्कोलॉजी, रोबोटिक सर्जरी और एंडोयूरोलॉजी',
                     hospital: 'मैक्स सुपर स्पेशलिटी हॉस्पिटल, नोएडा',
-                    experience: 'प्रोस्टेट और मूत्र संबंधी कैंसर के सेंटर ऑफ एक्सीलेंस में विशेषज्ञता।',
-                    testimonial: 'एंडोयूरोलॉजी और रोबोटिक सर्जरी में व्यापक अनुभव।',
+                    experience: '22+ साल का अनुभव',
+                    education: 'MBBS (MAMC), MCh (PGIMER)',
+                    specialty: 'लेजर प्रोस्टेटेक्टोमी (HoLEP सहित 900+), यूरो-ऑन्कोलॉजी, रोबोटिक सर्जरी, एंडोयूरोलॉजी',
+                    awards: '38+ प्रकाशन',
+                    ratings: '100% रोगी सिफारिश',
+                    testimonial: 'प्रोस्टेट और मूत्र संबंधी कैंसर के सेंटर ऑफ एक्सीलेंस में विशेषज्ञता।',
+                    color: 'sky'
+                },
+                {
+                    type: 'doctor',
+                    name: 'डॉ. पीयूष वार्ष्णेय',
+                    title: 'डायरेक्टर - यूरोलॉजी',
+                    hospital: 'फोर्टिस हॉस्पिटल, नोएडा',
+                    experience: '20+ साल का अनुभव',
+                    education: 'MBBS, MS (AMU), MCh (मुंबई विश्वविद्यालय)',
+                    specialty: 'प्रोस्टेट सर्जरी (TURP, HoLEP), किडनी स्टोन रिमूवल (PCNL, URS, RIRS), लैप्रोस्कोपिक यूरोलॉजी, रीकंस्ट्रक्टिव यूरोलॉजी, यूरो-ऑन्कोलॉजी',
+                    awards: 'MCh में गोल्ड मेडलिस्ट; नोएडा में पहला रोबोटिक किडनी ट्रांसप्लांट किया',
+                    ratings: '87% रोगी सिफारिश (110 रोगी कहानियां)',
+                    testimonial: 'विभिन्न यूरोलॉजिकल प्रक्रियाओं में व्यापक अनुभव और रोबोटिक सर्जरी में अग्रणी।',
+                    color: 'sky'
+                },
+                {
+                    type: 'doctor',
+                    name: 'डॉ. विमल दासी',
+                    title: 'सीनियर डायरेक्टर - यूरोलॉजी, यूरो-ऑन्कोलॉजी',
+                    hospital: 'मैक्स मल्टी स्पेशलिटी सेंटर, नोएडा / मैक्स सुपर स्पेशलिटी हॉस्पिटल, वैशाली',
+                    experience: '19+ साल का अनुभव',
+                    education: 'MBBS (रांची), MS, MCh (मुंबई विश्वविद्यालय)',
+                    specialty: 'लेजर प्रोस्टेट सर्जरी, रोबोटिक यूरो-ऑन्कोलॉजी, किडनी ट्रांसप्लांट, लैप्रोस्कोपिक यूरोलॉजी',
+                    awards: 'MCh में गोल्ड मेडलिस्ट; ATLAS प्रमाणित रोबोटिक सर्जन',
+                    ratings: 'Practo पर 97% रोगी सिफारिश (688 रोगी कहानियां)',
+                    testimonial: 'मैक्स हेल्थकेयर में यूरोलॉजी और किडनी प्रत्यारोपण विभाग के प्रमुख के रूप में कार्यरत।',
+                    color: 'sky'
+                },
+                 {
+                    type: 'doctor',
+                    name: 'डॉ. लोक प्रकाश चौधरी',
+                    title: 'प्रिंसिपल कंसल्टेंट- यूरोलॉजी, यूरो-ऑन्कोलॉजी',
+                    hospital: 'मैक्स सुपर स्पेशलिटी हॉस्पिटल, नोएडा',
+                    experience: '22+ साल का अनुभव',
+                    education: 'MCh (यूरोलॉजी)',
+                    specialty: 'यूरो-ऑन्कोलॉजी, रोबोटिक्स यूरोलॉजी और किडनी प्रत्यारोपण सेवाएं',
+                    awards: 'N/A',
+                    ratings: 'N/A',
+                    testimonial: 'मैक्स में यूरोलॉजी और किडनी प्रत्यारोपण सेवाओं में अग्रणी।',
+                    color: 'sky'
+                },
+                {
+                    type: 'doctor',
+                    name: 'डॉ. वरुण कुमार कटियार',
+                    title: 'यूरोलॉजिस्ट',
+                    hospital: 'अपोलो हॉस्पिटल्स, नोएडा',
+                    experience: '12+ साल का अनुभव',
+                    education: 'MBBS, MS (सर्जरी), MCh (यूरोलॉजी और रीनल ट्रांसप्लांट) - PGIMER (गोल्ड मेडलिस्ट)',
+                    specialty: 'यूरोलॉजी और रीनल ट्रांसप्लांट',
+                    awards: 'MCh में गोल्ड मेडलिस्ट',
+                    ratings: '94% रोगी सिफारिश (50+ रोगी)',
+                    testimonial: 'अपोलो हॉस्पिटल्स, नोएडा में एक अत्यधिक अनुभवी और योग्य यूरोलॉजिस्ट।',
+                    color: 'sky'
+                },
+                {
+                    type: 'doctor',
+                    name: 'डॉ. आशुतोष सिंह',
+                    title: 'यूरोलॉजिस्ट',
+                    hospital: 'अपोलो हॉस्पिटल्स, नोएडा',
+                    experience: '26+ साल का अनुभव',
+                    education: 'MBBS, MS (जनरल सर्जरी), M.Ch.',
+                    specialty: 'यूरोलॉजी, जनरल सर्जरी, प्रोस्टेट विकार',
+                    awards: 'N/A',
+                    ratings: '72% रोगी सिफारिश (18 रोगी कहानियां)',
+                    testimonial: 'प्रोस्टेट विकारों सहित विभिन्न यूरोलॉजिकल स्थितियों के उपचार में अनुभवी।',
+                    color: 'sky'
+                },
+                {
+                    type: 'doctor',
+                    name: 'डॉ. विपिन सिसोदिया',
+                    title: 'सीनियर कंसल्टेंट और रोबोटिक सर्जन',
+                    hospital: 'यथार्थ हॉस्पिटल्स',
+                    experience: '16+ साल का अनुभव',
+                    education: 'MBBS (अलीगढ़ मुस्लिम विश्वविद्यालय), DNB (यूरोलॉजी)',
+                    specialty: 'रोबोटिक सर्जरी, प्रोस्टेट लेजर सर्जरी, यूरो-ऑन्कोलॉजी, रीकंस्ट्रक्टिव यूरोलॉजी, पीडियाट्रिक यूरोलॉजी',
+                    awards: 'N/A',
+                    ratings: '95% रोगी सिफारिश (20 रोगी कहानियां)',
+                    testimonial: 'रोगी के मुद्दों को स्पष्ट रूप से समझाने और ईमानदार सलाह देने के लिए जाने जाते हैं।',
                     color: 'sky'
                 },
                 {
@@ -327,15 +443,6 @@
                     details: 'प्रोस्टेट सर्जरी सहित यूरोलॉजी परामर्श के लिए शीर्ष अस्पतालों में से एक। अत्याधुनिक सुविधाएं और अनुभवी विशेषज्ञ।',
                     tech: 'उन्नत लेजर और रोबोटिक सर्जरी के लिए सुविधाएं उपलब्ध।',
                     color: 'teal'
-                },
-                {
-                    type: 'doctor',
-                    name: 'डॉ. विपिन सिसोदिया',
-                    title: 'सीनियर कंसल्टेंट और रोबोटिक सर्जन',
-                    hospital: 'यथार्थ हॉस्पिटल्स',
-                    experience: '95% रोगी सिफारिश दर के साथ 16 साल का अनुभव।',
-                    testimonial: 'उनकी विशेषज्ञता और देखभाल के लिए मरीजों द्वारा अत्यधिक अनुशंसित।',
-                    color: 'sky'
                 }
             ];
 
@@ -343,6 +450,8 @@
             const sections = document.querySelectorAll('.content-section');
             const procedureDetailsContainer = document.getElementById('procedure-details');
             const procedureBtns = document.querySelectorAll('.procedure-btn');
+            const doctorsComparativeTableBody = document.getElementById('doctors-comparative-table-body');
+
 
             function updateProcedureContent(procedureKey) {
                 const data = procedureData[procedureKey];
@@ -402,29 +511,21 @@
             updateProcedureContent('holep');
 
             const specialistGrid = document.getElementById('specialist-grid');
-            specialistsData.forEach(item => {
+            specialistGrid.innerHTML = ''; // Clear existing content
+            specialistsData.filter(item => item.type === 'doctor').forEach(item => { // Filter for doctors
                 const card = document.createElement('div');
                 card.className = `specialist-card bg-white p-5 rounded-lg shadow-sm border-l-4 border-${item.color}-500`;
                 
                 let content = `<h3 class="text-lg font-bold text-${item.color}-800">${item.name}</h3>`;
-                if (item.type === 'doctor') {
-                    content += `<p class="text-slate-600 font-medium">${item.title}</p><p class="text-slate-500 text-sm">${item.hospital}</p>`;
-                } else {
-                    content += `<p class="text-slate-600 font-medium">अग्रणी अस्पताल</p>`;
-                }
+                content += `<p class="text-slate-600 font-medium">${item.title}</p><p class="text-slate-500 text-sm">${item.hospital}</p>`;
                 
-                let detailsContent = '';
-                if(item.type === 'doctor') {
-                    detailsContent = `
-                        <p class="mt-3 text-sm text-slate-600"><strong class="font-semibold text-slate-700">अनुभव:</strong> ${item.experience}</p>
-                        <p class="mt-2 text-sm text-slate-600 italic border-l-2 border-slate-300 pl-2">"${item.testimonial}"</p>
-                    `;
-                } else {
-                     detailsContent = `
-                        <p class="mt-3 text-sm text-slate-600"><strong class="font-semibold text-slate-700">विवरण:</strong> ${item.details}</p>
-                        <p class="mt-2 text-sm text-slate-600"><strong class="font-semibold text-slate-700">मुख्य प्रौद्योगिकी:</strong> ${item.tech}</p>
-                    `;
-                }
+                let detailsContent = `
+                    <p class="mt-3 text-sm text-slate-600"><strong class="font-semibold text-slate-700">अनुभव:</strong> ${item.experience}</p>
+                    <p class="mt-2 text-sm text-slate-600"><strong class="font-semibold text-slate-700">शिक्षा व अल्मा मेटर:</strong> ${item.education}</p>
+                    <p class="mt-2 text-sm text-slate-600"><strong class="font-semibold text-slate-700">विशेषज्ञता:</strong> ${item.specialty}</p>
+                    <p class="mt-2 text-sm text-slate-600"><strong class="font-semibold text-slate-700">उपलब्धियाँ और मान्यता:</strong> ${item.awards}</p>
+                    <p class="mt-2 text-sm text-slate-600"><strong class="font-semibold text-slate-700">रेटिंग:</strong> ${item.ratings}</p>
+                `;
                 
                 content += `<div class="details">${detailsContent}</div><div class="text-right text-xs text-slate-400 mt-2">विस्तार के लिए क्लिक करें</div>`;
                 card.innerHTML = content;
@@ -434,6 +535,21 @@
                 });
 
                 specialistGrid.appendChild(card);
+            });
+
+            // Populate the comparative table
+            specialistsData.filter(item => item.type === 'doctor').forEach(doctor => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-slate-50';
+                row.innerHTML = `
+                    <td class="py-3 px-4 border-b border-slate-200 font-medium">${doctor.name}</td>
+                    <td class="py-3 px-4 border-b border-slate-200">${doctor.hospital}</td>
+                    <td class="py-3 px-4 border-b border-slate-200">${doctor.experience}</td>
+                    <td class="py-3 px-4 border-b border-slate-200">${doctor.education}</td>
+                    <td class="py-3 px-4 border-b border-slate-200">${doctor.specialty}</td>
+                    <td class="py-3 px-4 border-b border-slate-200">${doctor.awards}</td>
+                `;
+                doctorsComparativeTableBody.appendChild(row);
             });
 
             const recoveryCtx = document.getElementById('recoveryChart').getContext('2d');
