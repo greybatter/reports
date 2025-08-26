@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>नोएडा में BPH सर्जरी के लिए एक इंटरैक्टिव गाइड</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals (Stone, Sky Blue, Teal) -->
+    <!-- Application Structure Plan: A user-journey-based SPA with six thematic, interactive sections in Hindi: 1. अवलोकन, 2. प्रक्रियाएं समझें (dynamic content + chart), 3. आमने-सामने तुलना, 4. विशेषज्ञ खोजें (interactive cards), 5. लागत की जानकारी (chart), 6. परामर्श गाइड. This structure breaks down the dense report into digestible, task-oriented modules, prioritizing user exploration and decision support over a linear document format. -->
+    <!-- Visualization & Content Choices: 1. Clinical Data -> Goal: Compare -> Viz: Interactive Bar Chart (Chart.js) -> Interaction: Update on procedure selection -> Justification: Visually compares key recovery metrics for faster comprehension. 2. Cost Data -> Goal: Inform -> Viz: Horizontal Bar Chart (Chart.js) -> Interaction: Hover tooltips -> Justification: Clearly shows cost ranges and overlaps. 3. Doctors/Hospitals -> Goal: Organize -> Presentation: Clickable HTML/CSS Cards -> Interaction: Toggle to show details -> Justification: Interactive directory for easy exploration. CONFIRMED: All visuals use Chart.js (Canvas) or styled HTML. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 40vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+        .nav-link.active {
+            background-color: #0284c7; /* sky-600 */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .specialist-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .specialist-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .details.open {
+            max-height: 1000px;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <h1 class="text-2xl md:text-3xl font-bold text-sky-700 text-center">नोएडा में BPH सर्जरी के लिए आपकी गाइड</h1>
+            <p class="text-center text-slate-600 mt-1">सूचित निर्णयों के लिए एक इंटरैक्टिव उपकरण</p>
+        </div>
+    </header>
+
+    <nav class="bg-white border-b border-slate-200 py-3">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap justify-center gap-2 md:gap-4">
+                <button data-target="overview" class="nav-link active text-sm md:text-base font-medium py-2 px-3 md:px-4 rounded-full bg-slate-100 text-slate-700 hover:bg-sky-100">अवलोकन</button>
+                <button data-target="procedures" class="nav-link text-sm md:text-base font-medium py-2 px-3 md:px-4 rounded-full bg-slate-100 text-slate-700 hover:bg-sky-100">प्रक्रियाएं समझें</button>
+                <button data-target="comparison" class="nav-link text-sm md:text-base font-medium py-2 px-3 md:px-4 rounded-full bg-slate-100 text-slate-700 hover:bg-sky-100">आमने-सामने तुलना</button>
+                <button data-target="specialists" class="nav-link text-sm md:text-base font-medium py-2 px-3 md:px-4 rounded-full bg-slate-100 text-slate-700 hover:bg-sky-100">विशेषज्ञ खोजें</button>
+                <button data-target="costs" class="nav-link text-sm md:text-base font-medium py-2 px-3 md:px-4 rounded-full bg-slate-100 text-slate-700 hover:bg-sky-100">लागत की जानकारी</button>
+                <button data-target="guide" class="nav-link text-sm md:text-base font-medium py-2 px-3 md:px-4 rounded-full bg-slate-100 text-slate-700 hover:bg-sky-100">परामर्श गाइड</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <section id="overview" class="content-section active">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h2 class="text-2xl font-bold text-sky-800 mb-4">आपकी BPH उपचार यात्रा को नेविगेट करना</h2>
+                <p class="mb-4 text-slate-700 leading-relaxed">यह इंटरैक्टिव गाइड आपको नोएडा और आसपास के राष्ट्रीय राजधानी क्षेत्र में उपलब्ध बिनाइन प्रोस्टेटिक हाइपरप्लासिया (BPH) के लिए सर्जिकल विकल्पों को समझने में मदद करने के लिए डिज़ाइन किया गया है। BPH, प्रोस्टेट का एक गैर-कैंसरयुक्त बढ़ाव, 50 वर्ष से अधिक आयु के पुरुषों में एक आम स्थिति है। जब लक्षण परेशान करने वाले हो जाते हैं और दवा का जवाब नहीं देते हैं, तो मूत्र संबंधी रुकावट को दूर करने और जीवन की गुणवत्ता में सुधार के लिए अक्सर सर्जरी की सिफारिश की जाती है।</p>
+                <p class="text-slate-700 leading-relaxed">यहां, आप सबसे आम और प्रभावी प्रक्रियाओं का पता लगा सकते हैं, उनके परिणामों की तुलना कर सकते हैं, प्रमुख स्थानीय विशेषज्ञों और अस्पतालों के बारे में जान सकते हैं, और संबंधित लागतों की स्पष्ट तस्वीर प्राप्त कर सकते हैं। हमारा लक्ष्य आपको अपने डॉक्टर के साथ एक आत्मविश्वासपूर्ण और सूचित चर्चा करने के लिए आवश्यक जानकारी के साथ सशक्त बनाना है, जिससे आपकी विशिष्ट स्थिति के लिए सर्वोत्तम उपचार निर्णय लिया जा सके।</p>
+            </div>
+        </section>
+
+        <section id="procedures" class="content-section">
+             <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h2 class="text-2xl font-bold text-sky-800 mb-4">सर्जिकल प्रक्रियाएं समझें</h2>
+                <p class="mb-6 text-slate-700">आधुनिक BPH सर्जरी न्यूनतम इनवेसिव तकनीकों पर केंद्रित है जो तेजी से रिकवरी के साथ प्रभावी राहत प्रदान करती है। दीर्घकालिक सफलता के लिए सबसे महत्वपूर्ण कारक "एन्यूक्लिएशन" तकनीक में सर्जन का कौशल है - यानी, अवरोधक ऊतक को पूरी तरह से हटाना। नीचे दी गई प्रक्रिया पर क्लिक करके और जानें और देखें कि यह प्रमुख रिकवरी मेट्रिक्स पर कैसे तुलना करती है।</p>
+                <div class="flex justify-center gap-4 mb-8">
+                    <button id="showHoLEP" class="procedure-btn active bg-sky-600 text-white font-semibold py-2 px-6 rounded-lg shadow-sm hover:bg-sky-700 transition">HoLEP</button>
+                    <button id="showTURP" class="procedure-btn bg-white text-sky-600 font-semibold py-2 px-6 rounded-lg shadow-sm border border-sky-600 hover:bg-sky-50 transition">Bipolar TURP</button>
+                </div>
+
+                <div id="procedure-details">
+                </div>
+                
+                <div class="mt-8">
+                    <h3 class="text-xl font-semibold text-center text-slate-800 mb-4">एक नज़र में रिकवरी मेट्रिक्स</h3>
+                    <div class="chart-container">
+                        <canvas id="recoveryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparison" class="content-section">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h2 class="text-2xl font-bold text-sky-800 mb-4">HoLEP बनाम Bipolar TURP: एक सीधी तुलना</h2>
+                <p class="mb-6 text-slate-700">दोनों प्रक्रियाएं BPH के लक्षणों से राहत दिलाने में अत्यधिक प्रभावी हैं। HoLEP का लंबा ऑपरेटिव समय अधिक पूर्ण ऊतक हटाने की अनुमति देता है, जिससे तेजी से रिकवरी होती है। Bipolar TURP का मुख्य लाभ TUR सिंड्रोम के जोखिम का उन्मूलन है, जो पुरानी विधियों की एक दुर्लभ जटिलता है। यह तालिका उनके नैदानिक और जोखिम प्रोफाइल पर एक स्पष्ट, आमने-सामने का दृश्य प्रदान करती है।</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr>
+                                <th class="py-3 px-4 bg-slate-100 font-semibold text-slate-700 border-b-2 border-slate-200">मीट्रिक / जोखिम</th>
+                                <th class="py-3 px-4 bg-sky-50 font-semibold text-sky-800 border-b-2 border-sky-200 text-center">HoLEP</th>
+                                <th class="py-3 px-4 bg-teal-50 font-semibold text-teal-800 border-b-2 border-teal-200 text-center">Bipolar TURP</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-slate-700">
+                            <tr class="hover:bg-slate-50">
+                                <td class="py-3 px-4 border-b border-slate-200 font-medium">ऑपरेटिव समय</td>
+                                <td class="py-3 px-4 border-b border-slate-200 text-center">~66.5 मिनट</td>
+                                <td class="py-3 px-4 border-b border-slate-200 text-center">~52.0 मिनट</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="py-3 px-4 border-b border-slate-200 font-medium">अस्पताल में रुकना</td>
+                                <td class="py-3 px-4 border-b border-slate-200 text-center">~3.1 दिन</td>
+                                <td class="py-3 px-4 border-b border-slate-200 text-center">~3.8 दिन</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="py-3 px-4 border-b border-slate-200 font-medium">कैथेटर का समय</td>
+                                <td class="py-3 px-4 border-b border-slate-200 text-center">~2.4 दिन</td>
+                                <td class="py-3 px-4 border-b border-slate-200 text-center">~3.2 दिन</td>
+                            </tr>
+                             <tr class="hover:bg-slate-50">
+                                <td class="py-3 px-4 border-b border-slate-200 font-medium">प्रतिगामी स्खलन</td>
+                                <td class="py-3 px-4 border-b border-slate-200 text-center">उच्च जोखिम</td>
+                                <td class="py-3 px-4 border-b border-slate-200 text-center">उच्च जोखिम (80-100%)</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="py-3 px-4 border-b border-slate-200 font-medium">स्तंभन दोष (ED)</td>
+                                <td class="py-3 px-4 border-b border-slate-200 text-center">कम जोखिम (≤5%)</td>
+                                <td class="py-3 px-4 border-b border-slate-200 text-center">कम जोखिम (≤5%)</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="py-3 px-4 border-b border-slate-200 font-medium">गंभीर रक्तस्राव</td>
+                                <td class="py-3 px-4 border-b border-slate-200 text-center">न्यूनतम / कम जोखिम</td>
+                                <td class="py-3 px-4 border-b border-slate-200 text-center">न्यूनतम / कम जोखिम</td>
+                            </tr>
+                             <tr class="hover:bg-slate-50">
+                                <td class="py-3 px-4 border-b border-slate-200 font-medium">TUR सिंड्रोम</td>
+                                <td class="py-3 px-4 border-b border-slate-200 text-center">कोई जोखिम नहीं</td>
+                                <td class="py-3 px-4 border-b border-slate-200 text-center">लगभग समाप्त</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="specialists" class="content-section">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h2 class="text-2xl font-bold text-sky-800 mb-4">नोएडा क्षेत्र में एक विशेषज्ञ खोजें</h2>
+                <p class="mb-6 text-slate-700">नोएडा और NCR अत्यधिक कुशल मूत्र रोग विशेषज्ञों और अत्याधुनिक अस्पतालों का घर है। एक सकारात्मक रोगी अनुभव अक्सर सर्जन की नैदानिक विशेषज्ञता और सहानुभूति के साथ संवाद करने की उनकी क्षमता दोनों पर निर्भर करता है। नीचे कुछ प्रमुख विशेषज्ञों और सुविधाओं का अन्वेषण करें। अधिक विवरण देखने के लिए किसी भी कार्ड पर क्लिक करें।</p>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="specialist-grid">
+                </div>
+            </div>
+        </section>
+
+        <section id="costs" class="content-section">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h2 class="text-2xl font-bold text-sky-800 mb-4">BPH सर्जरी की लागत को समझना</h2>
+                <p class="mb-6 text-slate-700">नोएडा में सर्जरी की लागत प्रक्रिया, अस्पताल और सर्जन के आधार पर भिन्न होती है। जबकि HoLEP की प्रारंभिक लागत अधिक हो सकती है, इसे कम अस्पताल में रहने से ऑफसेट किया जा सकता है। अंतिम बिल में आमतौर पर नैदानिक परीक्षण, सर्जन की फीस, एनेस्थीसिया और अस्पताल के खर्च शामिल होते हैं। अधिकांश स्वास्थ्य बीमा पॉलिसियां BPH सर्जरी को कवर करती हैं, लेकिन अपने प्रदाता के साथ विवरण की पुष्टि करना आवश्यक है।</p>
+                 <div class="chart-container" style="height: 450px; max-height: 60vh;">
+                    <canvas id="costChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="guide" class="content-section">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h2 class="text-2xl font-bold text-sky-800 mb-4">आपका परामर्श गाइड</h2>
+                <p class="mb-6 text-slate-700">एक सफल उपचार यात्रा एक सूचित बातचीत से शुरू होती है। अपने परामर्श के दौरान इन प्रश्नों का उपयोग अपने सर्जन के साथ एक साझा निर्णय लेने की प्रक्रिया में संलग्न होने के लिए करें। यह आपको अपने विकल्पों को समझने और आपके लिए सही रास्ता चुनने में मदद करेगा।</p>
+                <div class="space-y-4">
+                    <div class="bg-slate-50 p-4 rounded-lg border-l-4 border-sky-500">
+                        <h3 class="font-semibold text-slate-800">1. अनुभव और प्रशिक्षण</h3>
+                        <p class="text-slate-600 mt-1">"HoLEP, बाइपोलर TURP, या ThuLEP के साथ आपका विशिष्ट अनुभव क्या है, और आपने इनमें से लगभग कितनी प्रक्रियाएं की हैं?"</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg border-l-4 border-sky-500">
+                        <h3 class="font-semibold text-slate-800">2. प्रक्रिया की सिफारिश</h3>
+                        <p class="text-slate-600 mt-1">"मेरे प्रोस्टेट के आकार और मेरे समग्र स्वास्थ्य प्रोफाइल के आधार पर, आपको क्या लगता है कि मेरे लिए कौन सी प्रक्रिया सबसे उपयुक्त है, और क्यों?"</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg border-l-4 border-sky-500">
+                        <h3 class="font-semibold text-slate-800">3. अपेक्षित रिकवरी</h3>
+                        <p class="text-slate-600 mt-1">"आपके अनुभव के आधार पर मेरी स्थिति वाले रोगी के लिए कैथीटेराइजेशन का अपेक्षित समय और अस्पताल में रुकने का समय क्या है?"</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg border-l-4 border-sky-500">
+                        <h3 class="font-semibold text-slate-800">4. जोखिम पर चर्चा</h3>
+                        <p class="text-slate-600 mt-1">"क्या आप संभावित जोखिमों, विशेष रूप से प्रतिगामी स्खलन और असंयम के लिए, और विभिन्न प्रक्रियाओं के लिए उनकी तुलना कैसे करते हैं, का विवरण दे सकते हैं?"</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg border-l-4 border-sky-500">
+                        <h3 class="font-semibold text-slate-800">5. लागत और रसद</h3>
+                        <p class="text-slate-600 mt-1">"अनुशंसित प्रक्रिया के लिए अनुमानित लागत क्या है, और उस कुल का कितना हिस्सा आमतौर पर बीमा द्वारा कवर किया जाता है?"</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="text-center py-6 mt-8 bg-slate-100 border-t border-slate-200">
+        <p class="text-slate-500 text-sm">यह उपकरण केवल सूचना के उद्देश्यों के लिए है और चिकित्सा सलाह का गठन नहीं करता है। हमेशा एक योग्य स्वास्थ्य सेवा प्रदाता से परामर्श करें।</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const procedureData = {
+                holep: {
+                    title: 'होलमियम लेजर एन्यूक्लिएशन ऑफ द प्रोस्टेट (HoLEP)',
+                    description: 'HoLEP एक न्यूनतम इनवेसिव प्रक्रिया है जो मूत्र संबंधी रुकावट पैदा करने वाले प्रोस्टेट ऊतक के पूरे हिस्से को सटीक रूप से छीलने और हटाने के लिए एक उच्च-शक्ति वाले होलमियम लेजर का उपयोग करती है। यह शारीरिक एन्यूक्लिएशन पारंपरिक ओपन सर्जरी के परिणामों की नकल करता है, लेकिन बिना किसी बाहरी चीरे के मूत्रमार्ग के माध्यम से किया जाता है।',
+                    advantages: [
+                        'कम पुन: उपचार दरों के साथ टिकाऊ, लंबे समय तक चलने वाला समाधान।',
+                        'किसी भी आकार के प्रोस्टेट के लिए प्रभावी।',
+                        'कैंसर स्क्रीनिंग के लिए ऊतक को संरक्षित करता है।',
+                        'अस्पताल में कम समय रुकना और कैथेटर का समय कम होना।'
+                    ],
+                    considerations: [
+                        'सर्जनों के लिए तकनीकी रूप से चुनौतीपूर्ण और सीखने की अवस्था कठिन।',
+                        'TURP की तुलना में लंबा ऑपरेटिव समय।',
+                        'प्रतिगामी स्खलन का उच्च जोखिम।'
+                    ]
+                },
+                turp: {
+                    title: 'बाइपोलर ट्रांसयूरेथ्रल रिसेक्शन ऑफ द प्रोस्टेट (Bipolar TURP)',
+                    description: 'Bipolar TURP मानक TURP प्रक्रिया का एक आधुनिक संस्करण है। मूत्रमार्ग के माध्यम से एक रिसेक्टोस्कोप डाला जाता है। उपकरण के अंत में एक बाइपोलर विद्युत लूप का उपयोग अतिरिक्त प्रोस्टेट ऊतक को टुकड़े-टुकड़े करके ट्रिम करने के लिए किया जाता है, जिससे मूत्रमार्ग चैनल चौड़ा हो जाता है। यह प्रक्रिया सिंचाई के लिए एक सुरक्षित खारे घोल का उपयोग करती है, जो TUR सिंड्रोम के जोखिम को समाप्त करती है।',
+                    advantages: [
+                        'मध्यम से गंभीर लक्षणों के लिए अत्यधिक प्रभावी।',
+                        'TUR सिंड्रोम के जोखिम को लगभग समाप्त कर देता है।',
+                        'HoLEP की तुलना में कम ऑपरेटिव समय।',
+                        'अधिकांश मूत्र रोग विशेषज्ञों के लिए व्यापक रूप से उपलब्ध और परिचित।'
+                    ],
+                    considerations: [
+                        'बहुत बड़े प्रोस्टेट के लिए उतना प्रभावी नहीं हो सकता है।',
+                        'HoLEP की तुलना में थोड़ी लंबी रिकवरी और कैथेटर का समय।',
+                        'प्रतिगामी स्खलन का उच्च जोखिम।'
+                    ]
+                }
+            };
+            
+            const specialistsData = [
+                {
+                    type: 'doctor',
+                    name: 'डॉ. अतुल गर्ग',
+                    title: 'कंसल्टेंट यूरो सर्जन',
+                    hospital: 'कैलाश हॉस्पिटल, नोएडा',
+                    experience: '10,000+ लेजर प्रोस्टेट सर्जरी (HoLEP/ThuLEP), 20,000+ न्यूनतम इनवेसिव स्टोन रिमूवल।',
+                    testimonial: 'एक मरीज के दादाजी "हमेशा उनकी प्रशंसा करते हैं" और "इस महान डॉक्टर के बारे में हर रिश्तेदार से ऊंची बातें करना कभी बंद नहीं करते"।',
+                    color: 'sky'
+                },
+                {
+                    type: 'doctor',
+                    name: 'डॉ. वेंकटेश कुमार',
+                    title: 'सीनियर कंसल्टेंट यूरोलॉजिस्ट और रोबोटिक सर्जन',
+                    hospital: 'यथार्थ सुपर स्पेशलिटी हॉस्पिटल',
+                    experience: '10+ साल का अनुभव, रोबोटिक सर्जरी में वट्टिकुटी स्कॉलर। नियमित रूप से थुलियम लेजर प्रोस्टेट सर्जरी करते हैं।',
+                    testimonial: 'नवीनतम थुलियम लेजर का उपयोग करने और 5,000 से अधिक सफल यूरोलॉजिकल सर्जरी करने के लिए जाने जाते हैं।',
+                     color: 'sky'
+                },
+                {
+                    type: 'doctor',
+                    name: 'डॉ. विमल दासी',
+                    title: 'सीनियर डायरेक्टर - यूरोलॉजी, यूरो-ऑन्कोलॉजी',
+                    hospital: 'मैक्स मल्टी स्पेशलिटी सेंटर, नोएडा',
+                    experience: 'यूरोलॉजी, रोबोटिक्स और किडनी प्रत्यारोपण में 17+ साल का अनुभव। ATLAS प्रमाणित रोबोटिक सर्जन।',
+                    testimonial: 'मैक्स हेल्थकेयर में यूरोलॉजी और किडनी प्रत्यारोपण विभाग के प्रमुख के रूप में कार्यरत।',
+                    color: 'sky'
+                },
+                {
+                    type: 'doctor',
+                    name: 'डॉ. पंकज वधवा',
+                    title: 'सीनियर डायरेक्टर - यूरो-ऑन्कोलॉजी, रोबोटिक सर्जरी और एंडोयूरोलॉजी',
+                    hospital: 'मैक्स सुपर स्पेशलिटी हॉस्पिटल, नोएडा',
+                    experience: 'प्रोस्टेट और मूत्र संबंधी कैंसर के सेंटर ऑफ एक्सीलेंस में विशेषज्ञता।',
+                    testimonial: 'एंडोयूरोलॉजी और रोबोटिक सर्जरी में व्यापक अनुभव।',
+                    color: 'sky'
+                },
+                {
+                    type: 'hospital',
+                    name: 'यथार्थ हॉस्पिटल्स',
+                    details: 'HoLEP, TURP और रोबोटिक प्रोस्टेटेक्टॉमी सहित उपचारों का एक पूरा स्पेक्ट्रम प्रदान करता है।',
+                    tech: 'दा विंची सर्जिकल रोबोट, अत्याधुनिक थुलियम लेजर और यूरोफ्लोमेट्री प्रणाली से लैस।',
+                    color: 'teal'
+                },
+                {
+                    type: 'hospital',
+                    name: 'फोर्टिस हॉस्पिटल, नोएडा',
+                    details: 'एक व्यापक यूरोलॉजी विभाग के साथ बहु-विशेषता तृतीयक देखभाल अस्पताल।',
+                    tech: 'रोबोटिक-सहायता प्राप्त प्रक्रियाओं के लिए दा विंची Xi सिस्टम की सुविधा है, जो छोटे चीरों और तेजी से रिकवरी की अनुमति देता है।',
+                    color: 'teal'
+                },
+                {
+                    type: 'hospital',
+                    name: 'कैलाश हॉस्पिटल, नोएडा',
+                    details: 'उच्च सफलता दर के एक मजबूत ट्रैक रिकॉर्ड के साथ सुस्थापित यूरोलॉजी डिवीजन।',
+                    tech: 'एंडोयूरोलॉजी (TURP सहित), लेप्रोस्कोपिक सर्जरी और लिथोट्रिप्सी के लिए सुसज्जित।',
+                    color: 'teal'
+                },
+                {
+                    type: 'hospital',
+                    name: 'मैक्स मल्टी स्पेशलिटी सेंटर, नोएडा',
+                    details: 'प्रोस्टेट सर्जरी सहित यूरोलॉजी परामर्श के लिए शीर्ष अस्पतालों में से एक। अत्याधुनिक सुविधाएं और अनुभवी विशेषज्ञ।',
+                    tech: 'उन्नत लेजर और रोबोटिक सर्जरी के लिए सुविधाएं उपलब्ध।',
+                    color: 'teal'
+                },
+                {
+                    type: 'doctor',
+                    name: 'डॉ. विपिन सिसोदिया',
+                    title: 'सीनियर कंसल्टेंट और रोबोटिक सर्जन',
+                    hospital: 'यथार्थ हॉस्पिटल्स',
+                    experience: '95% रोगी सिफारिश दर के साथ 16 साल का अनुभव।',
+                    testimonial: 'उनकी विशेषज्ञता और देखभाल के लिए मरीजों द्वारा अत्यधिक अनुशंसित।',
+                    color: 'sky'
+                }
+            ];
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.content-section');
+            const procedureDetailsContainer = document.getElementById('procedure-details');
+            const procedureBtns = document.querySelectorAll('.procedure-btn');
+
+            function updateProcedureContent(procedureKey) {
+                const data = procedureData[procedureKey];
+                let advantagesHtml = data.advantages.map(item => `<li class="flex items-start"><span class="text-green-500 mr-2 mt-1">&#10003;</span><span>${item}</span></li>`).join('');
+                let considerationsHtml = data.considerations.map(item => `<li class="flex items-start"><span class="text-orange-500 mr-2 mt-1">&#9888;</span><span>${item}</span></li>`).join('');
+
+                procedureDetailsContainer.innerHTML = `
+                    <div class="grid md:grid-cols-2 gap-6 items-start">
+                        <div>
+                            <h3 class="text-xl font-semibold text-slate-800 mb-3">${data.title}</h3>
+                            <p class="text-slate-600 leading-relaxed">${data.description}</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg">
+                            <div class="mb-4">
+                                <h4 class="font-semibold text-green-700 mb-2">मुख्य लाभ</h4>
+                                <ul class="space-y-1 text-slate-600">${advantagesHtml}</ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-orange-700 mb-2">विचारणीय बातें</h4>
+                                <ul class="space-y-1 text-slate-600">${considerationsHtml}</ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    const targetId = link.dataset.target;
+
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+
+                    sections.forEach(section => {
+                        if (section.id === targetId) {
+                            section.classList.add('active');
+                        } else {
+                            section.classList.remove('active');
+                        }
+                    });
+                });
+            });
+
+            procedureBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    procedureBtns.forEach(b => b.classList.remove('active', 'bg-sky-600', 'text-white'));
+                    procedureBtns.forEach(b => b.classList.add('bg-white', 'text-sky-600', 'border', 'border-sky-600'));
+                    
+                    e.target.classList.add('active', 'bg-sky-600', 'text-white');
+                    e.target.classList.remove('bg-white', 'text-sky-600', 'border', 'border-sky-600');
+
+                    const procedure = e.target.id === 'showHoLEP' ? 'holep' : 'turp';
+                    updateProcedureContent(procedure);
+                });
+            });
+            
+            updateProcedureContent('holep');
+
+            const specialistGrid = document.getElementById('specialist-grid');
+            specialistsData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `specialist-card bg-white p-5 rounded-lg shadow-sm border-l-4 border-${item.color}-500`;
+                
+                let content = `<h3 class="text-lg font-bold text-${item.color}-800">${item.name}</h3>`;
+                if (item.type === 'doctor') {
+                    content += `<p class="text-slate-600 font-medium">${item.title}</p><p class="text-slate-500 text-sm">${item.hospital}</p>`;
+                } else {
+                    content += `<p class="text-slate-600 font-medium">अग्रणी अस्पताल</p>`;
+                }
+                
+                let detailsContent = '';
+                if(item.type === 'doctor') {
+                    detailsContent = `
+                        <p class="mt-3 text-sm text-slate-600"><strong class="font-semibold text-slate-700">अनुभव:</strong> ${item.experience}</p>
+                        <p class="mt-2 text-sm text-slate-600 italic border-l-2 border-slate-300 pl-2">"${item.testimonial}"</p>
+                    `;
+                } else {
+                     detailsContent = `
+                        <p class="mt-3 text-sm text-slate-600"><strong class="font-semibold text-slate-700">विवरण:</strong> ${item.details}</p>
+                        <p class="mt-2 text-sm text-slate-600"><strong class="font-semibold text-slate-700">मुख्य प्रौद्योगिकी:</strong> ${item.tech}</p>
+                    `;
+                }
+                
+                content += `<div class="details">${detailsContent}</div><div class="text-right text-xs text-slate-400 mt-2">विस्तार के लिए क्लिक करें</div>`;
+                card.innerHTML = content;
+                
+                card.addEventListener('click', () => {
+                    card.querySelector('.details').classList.toggle('open');
+                });
+
+                specialistGrid.appendChild(card);
+            });
+
+            const recoveryCtx = document.getElementById('recoveryChart').getContext('2d');
+            const recoveryChart = new Chart(recoveryCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['ऑपरेटिव समय (मिनट)', 'अस्पताल में रुकना (दिन)', 'कैथेटर का समय (दिन)'],
+                    datasets: [{
+                        label: 'HoLEP',
+                        data: [66.5, 3.13, 2.41],
+                        backgroundColor: 'rgba(2, 132, 199, 0.7)', // sky-600
+                        borderColor: 'rgba(2, 132, 199, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Bipolar TURP',
+                        data: [52.03, 3.82, 3.17],
+                        backgroundColor: 'rgba(13, 148, 136, 0.7)', // teal-600
+                        borderColor: 'rgba(13, 148, 136, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'मान (दिन / मिनट)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        const unit = context.label.includes('समय') ? ' मिनट' : ' दिन';
+                                        label += context.parsed.y.toFixed(2) + unit;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const costCtx = document.getElementById('costChart').getContext('2d');
+            const costChart = new Chart(costCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Bipolar TURP', 'HoLEP', 'लेजर (सामान्य)', 'रोबोटिक'],
+                    datasets: [{
+                        label: 'लागत सीमा (INR)',
+                        data: [
+                            [60000, 280000], 
+                            [100000, 150000],
+                            [55000, 220000],
+                            [100000, 220000]
+                        ],
+                        backgroundColor: [
+                            'rgba(13, 148, 136, 0.7)',
+                            'rgba(2, 132, 199, 0.7)',
+                            'rgba(217, 119, 6, 0.7)', // amber-600
+                            'rgba(107, 114, 128, 0.7)' // gray-500
+                        ],
+                        borderColor: [
+                            'rgba(13, 148, 136, 1)',
+                            'rgba(2, 132, 199, 1)',
+                            'rgba(217, 119, 6, 1)',
+                            'rgba(107, 114, 128, 1)'
+                        ],
+                        borderWidth: 1,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'अनुमानित लागत (₹)'
+                            },
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    return '₹' + value.toLocaleString('en-IN');
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const raw = context.raw;
+                                    return `सीमा: ₹${raw[0].toLocaleString('en-IN')} - ₹${raw[1].toLocaleString('en-IN')}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
