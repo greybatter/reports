@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Buyer's Guide - Noida (₹30L - ₹55L)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral Dark (Slate, Cool Gray, Amber) -->
+    <!-- Application Structure Plan: The application is now a multi-view dashboard for deep analysis. The primary filters remain at the top for universal control. Below this, a new comprehensive comparative table is introduced for a data-dense, at-a-glance comparison of all filtered cars, with sortable columns. This provides a formal, analytical view. The dynamic price chart continues to offer a quick visual summary. Finally, the main car listings are presented in a detailed list view, allowing users to scroll through and focus on individual models with more information. This structure was chosen to cater to different user needs: quick filtering, detailed data comparison, and in-depth exploration, all within a single page. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: List of cars, prices, features, seating, specs. Goal: Organize & Compare. Viz/Presentation: Interactive Filters (HTML) + Dynamic Car Grid (HTML/JS) + Bar Chart (Chart.js) + Sortable Table with expandable rows (HTML/JS). Interaction: User selects filter criteria, sorts table columns, and clicks a button to reveal more details within the table. All views (list, table, chart) update. Justification: This multi-view approach provides a flexible and powerful tool for a complex decision like buying a car. The expandable row improves table readability by reducing initial clutter.
+        - Report Info: Key selling points and detailed specs. Goal: Inform. Viz/Presentation: Textual content and a mini-table within each list view card. Interaction: This information is presented statically within the filtered list. Justification: Keeps detailed info contextually linked to the vehicle while allowing for comparison across cards.
+        - Report Info: Dealer locations. Goal: Actionable Information. Viz/Presentation: Direct Google Search button. Interaction: Click to open a new tab with search results for the dealer. Justification: This provides a more direct and actionable user experience than a simple list.
+        - Library/Method: Chart.js for the bar chart. All other visuals and layouts use structured HTML with Tailwind CSS. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1e293b; /* slate-800 */
+            color: #e2e8f0; /* slate-200 */
+        }
+        .bg-card {
+            background-color: #334155; /* slate-700 */
+            border-color: #475569; /* slate-600 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 40vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .brand-checkbox:checked + label {
+            background-color: #f59e0b; /* amber-500 */
+            color: #1f2937; /* gray-800 */
+            border-color: #f59e0b; /* amber-500 */
+        }
+        .seating-btn.active {
+            background-color: #f59e0b; /* amber-500 */
+            color: #1f2937; /* gray-800 */
+            border-color: #f59e0b; /* amber-500 */
+        }
+        th.sortable {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        th.sortable:hover {
+            background-color: #3e5066; /* A slightly lighter shade for hover effect */
+        }
+        .details-toggle-btn {
+            background-color: #f59e0b;
+            color: #1f2937;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .model-link {
+            color: #f59e0b; /* amber-500 */
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        .model-link:hover {
+            color: #fbbf24; /* amber-400 */
+        }
+    </style>
+</head>
+<body class="bg-slate-800 text-slate-200">
+
+    <header class="bg-slate-900 shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <h1 class="text-3xl font-bold text-white">SUV Buyer's Guide: Noida</h1>
+            <p class="text-slate-400 mt-1">Explore and compare the best SUVs in the ₹30L - ₹55L price range.</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        
+        <section id="filters" class="bg-card p-6 rounded-lg shadow-xl mb-8 border border-slate-600">
+            <h2 class="text-xl font-semibold mb-4 text-slate-200">Filter & Sort</h2>
+            <!-- On mobile, the grid stacks items vertically. On medium screens and up, it becomes a 3-column grid. -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <div class="md:col-span-3">
+                    <label class="block font-medium mb-2 text-slate-400">Brand</label>
+                    <div id="brand-filters" class="flex flex-wrap gap-2">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="price-range" class="block font-medium mb-2 text-slate-400">Max Price: <span id="price-value" class="font-bold text-amber-500"></span></label>
+                    <input type="range" id="price-range" min="30" max="55" value="55" class="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer">
+                </div>
+                
+                <div>
+                    <label class="block font-medium mb-2 text-slate-400">Seating Capacity</label>
+                    <div id="seating-filters" class="flex items-center gap-2">
+                        <button data-seats="all" class="seating-btn active px-4 py-2 border border-slate-500 rounded-md text-sm font-medium transition">All</button>
+                        <button data-seats="5" class="seating-btn px-4 py-2 border border-slate-500 rounded-md text-sm font-medium transition">5 Seater</button>
+                        <button data-seats="7" class="seating-btn px-4 py-2 border border-slate-500 rounded-md text-sm font-medium transition">6/7 Seater</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparison-chart" class="bg-card p-6 rounded-lg shadow-xl mb-8 border border-slate-600">
+            <h2 class="text-xl font-semibold mb-4 text-slate-200">Filtered Price Comparison</h2>
+            <p class="text-sm text-slate-400 mb-4">This chart shows the starting ex-showroom price for the filtered vehicles to give you a quick visual comparison. Prices are approximate and in Lakhs (₹).</p>
+            <div class="chart-container">
+                <canvas id="priceChart"></canvas>
+            </div>
+        </section>
+
+        <section id="comparative-table" class="bg-card p-6 rounded-lg shadow-xl mb-8 border border-slate-600 overflow-x-auto">
+            <h2 class="text-xl font-semibold mb-4 text-slate-200">Detailed Comparison Table</h2>
+            <p class="text-sm text-slate-400 mb-4">Click on the column headers to sort the table. The table updates with every filter change. Click on a car's name to perform a Google search. On small screens, scroll horizontally to see all columns.</p>
+            <table class="min-w-full divide-y divide-slate-600">
+                <thead class="bg-slate-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider sortable" data-sort-by="model">Model</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider sortable" data-sort-by="price">Price (₹L)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider sortable" data-sort-by="seating">Seating</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Engine</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Transmission</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Details</th>
+                    </tr>
+                </thead>
+                <tbody id="comparison-table-body" class="bg-slate-700 divide-y divide-slate-600">
+                    <tr><td colspan="6" class="text-center py-4 text-slate-400">No cars match your criteria.</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="car-listings">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-slate-200">Available Models (<span id="car-count">0</span>)</h2>
+            </div>
+            <div id="car-grid" class="flex flex-col gap-6">
+                
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const carData = [
+            { id: 1, brand: 'Mahindra', model: 'XUV700', price: 28, seating: [5, 7], image: 'https://placehold.co/600x400/003366/FFFFFF?text=XUV700', whyBetter: 'Offers a feature-rich package with powerful engine options and available AWD. The ADAS safety suite is a segment benchmark. Available in both 5 and 7-seat configurations.', dealer: 'Koncept Mahindra', engine: '2.0L Petrol / 2.2L Diesel', transmission: '6-speed Manual / Automatic', mileage: '16.5 (Diesel)' },
+            { id: 2, brand: 'Mahindra', model: 'Scorpio-N', price: 25, seating: [7], image: 'https://placehold.co/600x400/003366/FFFFFF?text=Scorpio-N', whyBetter: 'A true body-on-frame SUV with excellent off-road capabilities (4XPLOR variant) and a commanding road presence. Feels robust and built to last.', dealer: 'PPS Motors', engine: '2.0L Petrol / 2.2L Diesel', transmission: '6-speed Manual / Automatic', mileage: '15.4 (Diesel)' },
+            { id: 3, brand: 'Tata', model: 'Harrier', price: 27, seating: [5], image: 'https://placehold.co/600x400/333333/FFFFFF?text=Harrier', whyBetter: 'Boasts a 5-star GNCAP safety rating and a stunning, bold design. The diesel engine is punchy and efficient, and the ride quality is exceptional on Indian roads.', dealer: 'Sagar Motors', engine: '2.0L Diesel', transmission: '6-speed Manual / Automatic', mileage: '16.8' },
+            { id: 4, brand: 'Tata', model: 'Safari', price: 28, seating: [6, 7], image: 'https://placehold.co/600x400/333333/FFFFFF?text=Safari', whyBetter: 'Builds on the Harrier\'s strengths with an added third row, making it a spacious and safe family SUV. Offers a comfortable ride and a premium cabin feel.', dealer: 'Concorde Motors', engine: '2.0L Diesel', transmission: '6-speed Manual / Automatic', mileage: '16.3' },
+            { id: 5, brand: 'Hyundai', model: 'Tucson', price: 35, seating: [5], image: 'https://placehold.co/600x400/002C5F/FFFFFF?text=Tucson', whyBetter: 'Stands out with its radical "Parametric Jewel" design. Offers a very premium and tech-loaded interior, smooth powertrains, and Level 2 ADAS features.', dealer: 'Capital Hyundai', engine: '2.0L Petrol / Diesel', transmission: '6-speed Automatic', mileage: '15.6 (Diesel)' },
+            { id: 6, brand: 'Kia', model: 'Seltos (X-Line)', price: 20, seating: [5], image: 'https://placehold.co/600x400/AC1423/FFFFFF?text=Seltos', whyBetter: 'Though starting lower, top variants enter this range. Packed with features like a panoramic sunroof, dual 10.25-inch screens, and ADAS. A stylish and modern compact SUV.', dealer: 'Allied Motors', engine: '1.5L Petrol / Diesel', transmission: 'IVT / DCT / 6MT', mileage: '17 (Petrol)' },
+            { id: 7, brand: 'Jeep', model: 'Compass', price: 30, seating: [5], image: 'https://placehold.co/600x400/000000/FFFFFF?text=Compass', whyBetter: 'Renowned for its tough build quality, excellent driving dynamics, and capable 4x4 system. It feels like a true-blue premium SUV from behind the wheel.', dealer: 'Landmark Jeep', engine: '2.0L Diesel', transmission: '9-speed Automatic', mileage: '14.5' },
+            { id: 8, brand: 'Jeep', model: 'Meridian', price: 38, seating: [7], image: 'https://placehold.co/600x400/000000/FFFFFF?text=Meridian', whyBetter: 'A 7-seater extension of the Compass, retaining the rugged DNA and premium feel while adding more space. One of the most capable 4x4s in its class.', dealer: 'Landmark Jeep', engine: '2.0L Diesel', transmission: '9-speed Automatic', mileage: '15.7' },
+            { id: 9, brand: 'Toyota', model: 'Innova Hycross', price: 31, seating: [7, 8], image: 'https://placehold.co/600x400/495057/FFFFFF?text=Hycross', whyBetter: 'Offers incredible space and comfort with a strong hybrid powertrain delivering excellent fuel efficiency. It drives like a comfortable monocoque MPV-SUV crossover.', dealer: 'Espirito Toyota', engine: '2.0L Strong Hybrid Petrol', transmission: 'e-CVT', mileage: '23.24' },
+            { id: 10, brand: 'Toyota', model: 'Fortuner', price: 45, seating: [7], image: 'https://placehold.co/600x400/495057/FFFFFF?text=Fortuner', whyBetter: 'Synonymous with reliability and resale value. A massively capable off-roader with a powerful diesel engine and an indestructible build quality.', dealer: 'Uttam Toyota', engine: '2.7L Petrol / 2.8L Diesel', transmission: '6-speed Manual / Automatic', mileage: '14.4 (Diesel)' },
+            { id: 11, brand: 'Volkswagen', model: 'Tiguan', price: 36, seating: [5], image: 'https://placehold.co/600x400/001E50/FFFFFF?text=Tiguan', whyBetter: 'Exemplifies German engineering with a sophisticated design, brilliant ride and handling, and a high-quality interior. The TSI petrol engine is smooth and powerful.', dealer: 'Volkswagen Noida', engine: '2.0L Turbo Petrol', transmission: '7-speed DSG', mileage: '12.65' },
+            { id: 12, brand: 'Suzuki', model: 'Invicto', price: 29, seating: [7, 8], image: 'https://placehold.co/600x400/1E3F8C/FFFFFF?text=Invicto', whyBetter: 'A rebadged Innova Hycross offering the same space, comfort, and strong hybrid efficiency, but available through the more accessible Nexa network.', dealer: 'Nexa Showrooms', engine: '2.0L Strong Hybrid Petrol', transmission: 'e-CVT', mileage: '23.24' },
+            { id: 13, brand: 'Audi', model: 'Q3', price: 50, seating: [5], image: 'https://placehold.co/600x400/000000/FFFFFF?text=Audi+Q3', whyBetter: 'The entry point to a luxury German brand. It offers a very premium cabin, refined driving experience, and the famed Quattro all-wheel-drive system.', dealer: 'Audi Noida', engine: '2.0L Turbo Petrol', transmission: '7-speed S-Tronic', mileage: '14.93' },
+            { id: 14, brand: 'BMW', model: 'X1', price: 52, seating: [5], image: 'https://placehold.co/600x400/0066B1/FFFFFF?text=BMW+X1', whyBetter: 'Focuses on sheer driving pleasure with a sporty chassis and responsive engines. The interior is modern, driver-focused, and uses high-quality materials.', dealer: 'Deutsche Motoren', engine: '1.5L Petrol / 2.0L Diesel', transmission: '7-speed Steptronic / 8-speed Steptronic', mileage: '18.1 (Petrol)' },
+            { id: 15, brand: 'Mercedes-Benz', model: 'GLA', price: 54, seating: [5], image: 'https://placehold.co/600x400/000000/FFFFFF?text=GLA', whyBetter: 'Delivers the quintessential Mercedes-Benz experience with a focus on comfort, luxury, and advanced technology like the MBUX infotainment system.', dealer: 'T&T Motors', engine: '1.3L Petrol / 2.0L Diesel', transmission: '7-speed DCT / 8-speed DCT', mileage: '17.4' },
+        ];
+
+        const carGrid = document.getElementById('car-grid');
+        const carCount = document.getElementById('car-count');
+        const priceRange = document.getElementById('price-range');
+        const priceValue = document.getElementById('price-value');
+        const brandFiltersContainer = document.getElementById('brand-filters');
+        const seatingFiltersContainer = document.getElementById('seating-filters');
+        const comparativeTableBody = document.getElementById('comparison-table-body');
+        const tableHeaders = document.querySelectorAll('#comparative-table th.sortable');
+        const chartCanvas = document.getElementById('priceChart');
+        
+        let priceChart;
+
+        let filters = {
+            brands: [],
+            maxPrice: 55,
+            seating: 'all',
+            sortBy: null,
+            sortDirection: 'asc'
+        };
+        
+        const uniqueBrands = [...new Set(carData.map(car => car.brand))].sort();
+
+        function setupFilters() {
+            priceValue.textContent = `₹${priceRange.value}L`;
+            
+            uniqueBrands.forEach(brand => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <input type="checkbox" id="brand-${brand}" value="${brand}" class="brand-checkbox hidden">
+                    <label for="brand-${brand}" class="cursor-pointer border border-slate-500 rounded-full px-3 py-1.5 text-sm transition hover:bg-slate-700">${brand}</label>
+                `;
+                brandFiltersContainer.appendChild(div);
+            });
+        }
+        
+        function renderCars(cars) {
+            carGrid.innerHTML = '';
+            if (cars.length === 0) {
+                 carGrid.innerHTML = `<p class="text-slate-400 text-center">No cars match your criteria. Try adjusting the filters.</p>`;
+            }
+            cars.forEach(car => {
+                const carCard = document.createElement('div');
+                // Flex direction is now explicitly column on mobile, and row on medium screens and up.
+                carCard.className = 'bg-card rounded-lg shadow-md overflow-hidden flex flex-col md:flex-row transition-transform hover:-translate-y-1 duration-300 border border-slate-600';
+                carCard.innerHTML = `
+                    <!-- Image now takes full width on mobile -->
+                    <img src="${car.image}" alt="${car.model}" class="w-full md:w-64 h-48 object-cover rounded-t-lg md:rounded-t-none md:rounded-l-lg">
+                    <div class="p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-lg font-bold text-white">${car.brand} ${car.model}</h3>
+                            <p class="text-amber-500 font-bold text-xl my-2">~ ₹${car.price}L</p>
+                            <p class="text-slate-400 text-sm mb-2">Seating: ${car.seating.join(' & ')} Seater</p>
+                            <p class="text-slate-300 text-sm mb-4">${car.whyBetter}</p>
+                            <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-slate-400 mb-4">
+                                <div class="flex items-center"><span class="font-medium mr-2 text-white">Engine:</span> ${car.engine}</div>
+                                <div class="flex items-center"><span class="font-medium mr-2 text-white">Transmission:</span> ${car.transmission}</div>
+                                <div class="flex items-center"><span class="font-medium mr-2 text-white">Mileage:</span> ${car.mileage} kmpl</div>
+                                <div class="flex items-center"><span class="font-medium mr-2 text-white">Dealer:</span> ${car.dealer}</div>
+                            </div>
+                        </div>
+                        <button onclick="window.open('https://www.google.com/search?q=${encodeURIComponent(car.dealer + ' ' + car.brand + ' Noida')}', '_blank')" class="w-full md:w-auto self-end bg-amber-500 text-slate-900 px-6 py-2 rounded-md font-bold hover:bg-amber-600 transition">Find a Dealer on Google</button>
+                    </div>
+                `;
+                carGrid.appendChild(carCard);
+            });
+            carCount.textContent = cars.length;
+        }
+
+        function renderTable(cars) {
+            comparativeTableBody.innerHTML = '';
+            if (cars.length === 0) {
+                comparativeTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-400">No cars match your criteria.</td></tr>`;
+                return;
+            }
+            cars.forEach(car => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-slate-600 transition';
+                row.dataset.id = car.id;
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+                        <a href="https://www.google.com/search?q=${encodeURIComponent(car.brand + ' ' + car.model + ' review')}" target="_blank" class="model-link">${car.brand} ${car.model}</a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-300">₹${car.price}L</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-300">${car.seating.join(' / ')}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-300">${car.engine}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-300">${car.transmission}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-300"><button class="details-toggle-btn" data-id="${car.id}">Show Details</button></td>
+                `;
+                comparativeTableBody.appendChild(row);
+            });
+        }
+
+        function renderChart(cars) {
+            const chartData = {
+                labels: cars.map(car => `${car.brand} ${car.model}`),
+                datasets: [{
+                    label: 'Starting Price (₹ Lakhs)',
+                    data: cars.map(car => car.price),
+                    backgroundColor: '#f59e0b',
+                    borderColor: '#f59e0b',
+                    borderWidth: 1
+                }]
+            };
+
+            if (priceChart) {
+                priceChart.destroy();
+            }
+
+            priceChart = new Chart(chartCanvas, {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: '#e2e8f0' },
+                            title: { display: true, text: 'Approx. Ex-Showroom Price (in Lakhs)', color: '#e2e8f0' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: '#e2e8f0' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#e2e8f0',
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.dataset.label}: ₹${context.raw}L`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function applyFilters() {
+            let filteredCars = carData.filter(car => {
+                const brandMatch = filters.brands.length === 0 || filters.brands.includes(car.brand);
+                const priceMatch = car.price <= filters.maxPrice;
+                const seatingMatch = filters.seating === 'all' || car.seating.includes(parseInt(filters.seating));
+                return brandMatch && priceMatch && seatingMatch;
+            });
+
+            if (filters.sortBy) {
+                const sortKey = filters.sortBy;
+                const direction = filters.sortDirection === 'asc' ? 1 : -1;
+                filteredCars.sort((a, b) => {
+                    let aVal = a[sortKey];
+                    let bVal = b[sortKey];
+                    if (typeof aVal === 'string') {
+                        return aVal.localeCompare(bVal) * direction;
+                    }
+                    return (aVal - bVal) * direction;
+                });
+            }
+
+            renderCars(filteredCars);
+            renderTable(filteredCars);
+            renderChart(filteredCars);
+        }
+
+        priceRange.addEventListener('input', (e) => {
+            filters.maxPrice = parseInt(e.target.value);
+            priceValue.textContent = `₹${filters.maxPrice}L`;
+            applyFilters();
+        });
+
+        brandFiltersContainer.addEventListener('change', (e) => {
+            if(e.target.classList.contains('brand-checkbox')) {
+                const brand = e.target.value;
+                if(e.target.checked) {
+                    filters.brands.push(brand);
+                } else {
+                    filters.brands = filters.brands.filter(b => b !== brand);
+                }
+                applyFilters();
+            }
+        });
+
+        seatingFiltersContainer.addEventListener('click', (e) => {
+            if(e.target.tagName === 'BUTTON') {
+                document.querySelectorAll('.seating-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                filters.seating = e.target.dataset.seats;
+                applyFilters();
+            }
+        });
+
+        tableHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                const sortBy = header.dataset.sortBy;
+                if (filters.sortBy === sortBy) {
+                    filters.sortDirection = filters.sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    filters.sortBy = sortBy;
+                    filters.sortDirection = 'asc';
+                }
+                applyFilters();
+            });
+        });
+
+        comparativeTableBody.addEventListener('click', (e) => {
+            const button = e.target.closest('.details-toggle-btn');
+            if (button) {
+                const carId = parseInt(button.dataset.id);
+                const car = carData.find(c => c.id === carId);
+                const currentRow = button.closest('tr');
+                const nextRow = currentRow.nextElementSibling;
+
+                if (nextRow && nextRow.classList.contains('details-row')) {
+                    nextRow.remove();
+                    button.textContent = 'Show Details';
+                } else {
+                    const detailsRow = document.createElement('tr');
+                    detailsRow.className = 'details-row bg-slate-600';
+                    detailsRow.innerHTML = `<td colspan="6" class="p-4 text-sm text-slate-300 italic">${car.whyBetter}</td>`;
+                    currentRow.after(detailsRow);
+                    button.textContent = 'Hide Details';
+                }
+            }
+        });
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupFilters();
+            applyFilters();
+        });
+
+    </script>
+</body>
+</html>
