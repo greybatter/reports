@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Mercedes-Benz Explorer | Sedans & SUVs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Energetic & Playful -->
+    <!-- Application Structure Plan: A centralized, scrollable table now serves as the primary navigation and data display, replacing the previous card grid. This structure provides a comprehensive, at-a-glance view of all vehicles. Users interact with the table to filter results and add cars to a dedicated comparison section at the bottom. This comparison area remains a dashboard with a detailed table and a dynamic radar chart for multi-dimensional analysis, ensuring core interactive functionality is preserved while improving overall information density and accessibility. -->
+    <!-- Visualization & Content Choices: 1. Full Vehicle List -> Goal: Organize & Inform -> Method: Interactive HTML Table (HTML/JS) -> Interaction: A search link on each car name for external research, and a "Compare" button for internal comparison. -> Justification: The table is the most efficient way to present a large list of data points in a structured, comparable format. 2. Vehicle Comparison -> Goal: Compare -> Method: Dynamic Radar Chart (Chart.js/Canvas) and a detailed table -> Interaction: Users select up to 3 cars from the main table. -> Justification: The radar chart offers a quick, multi-dimensional visual summary, while the table provides granular detail for direct comparison. Distinct colors are used to avoid a monochromatic palette and improve clarity. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F4E3;
+            color: #4A4A4A;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 450px;
+            width: 100%;
+            max-width: 600px;
+        }
+        .filter-btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .filter-btn.active {
+            background-color: #F46C49;
+            color: white;
+            box-shadow: 0 6px 8px -2px rgba(0, 0, 0, 0.2);
+        }
+        .car-image {
+            width: 100px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            overflow-x: auto;
+        }
+        th, td {
+            padding: 1rem;
+            text-align: left;
+        }
+        th {
+            background-color: #4A4A4A;
+            color: white;
+        }
+        tr:nth-child(odd) {
+            background-color: #EFEFEF;
+        }
+        tr:hover {
+            background-color: #F8D86A;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="bg-[#F8D86A] text-[#4A4A4A] py-8 px-4 text-center shadow-lg">
+        <h1 class="text-4xl md:text-5xl font-extrabold">Interactive Mercedes-Benz Explorer</h1>
+        <h2 class="text-2xl md:text-3xl font-light mt-2 text-[#F46C49]">Sedans & SUVs for the Indian Market</h2>
+        <p class="text-md text-[#4A4A4A] mt-4 max-w-3xl mx-auto">Explore all models, filter by type, and select up to three vehicles to compare in the dashboard below.</p>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+        <div id="filters" class="flex flex-wrap justify-center gap-2 md:gap-4 mb-10">
+            <button class="filter-btn active text-lg font-semibold py-3 px-6 bg-white rounded-full hover:bg-[#F46C49] hover:text-white" data-filter="all">All Vehicles</button>
+            <button class="filter-btn text-lg font-semibold py-3 px-6 bg-white rounded-full hover:bg-[#F46C49] hover:text-white" data-filter="Sedan">Sedans</button>
+            <button class="filter-btn text-lg font-semibold py-3 px-6 bg-white rounded-full hover:bg-[#F46C49] hover:text-white" data-filter="SUV">SUVs</button>
+            <button class="filter-btn text-lg font-semibold py-3 px-6 bg-white rounded-full hover:bg-[#F46C49] hover:text-white" data-filter="Electric">Electric (EQ)</button>
+        </div>
+
+        <div class="overflow-x-auto rounded-lg shadow-lg">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr>
+                        <th class="rounded-tl-lg">Photo</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Est. Price</th>
+                        <th>Engine Specs</th>
+                        <th>Power</th>
+                        <th>Key Feature</th>
+                        <th class="rounded-tr-lg">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="vehicle-table-body">
+                </tbody>
+            </table>
+        </div>
+
+        <section id="comparison-section" class="mt-20 pt-10 border-t-4 border-dashed border-[#F46C49]">
+             <h3 class="text-4xl font-bold text-[#4A4A4A] text-center mb-4">Comparison Dashboard</h3>
+             <div id="comparison-content" class="min-h-[400px] flex items-center justify-center">
+                <p class="text-xl text-center text-[#F46C49]">Select up to 3 vehicles from the table to compare them.</p>
+             </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-[#4A4A4A] text-center py-6 mt-12">
+        <p class="text-white">An interactive tool for exploring the Mercedes-Benz lineup.</p>
+        <p class="text-xs text-gray-400 mt-1">Data as of August 2025 for Noida, UP. Prices are estimates.</p>
+    </footer>
+
+<script>
+    const vehicleData = [
+        { id: 1, name: 'A-Class Limousine', type: 'Sedan', price: '₹53 Lakh', priceVal: 53, engine: '1.3L Petrol / 2.0L Diesel', power: 161, feature: 'MBUX Voice Assistant', luxury: 'Panoramic Sunroof', scores: { price: 9, power: 4, luxury: 6, tech: 7 }, photo: 'https://placehold.co/200x120/F46C49/FFFFFF?text=A-Class' },
+        { id: 2, name: 'C-Class', type: 'Sedan', price: '₹70 Lakh', priceVal: 70, engine: '1.5L Petrol / 2.0L Diesel', power: 201, feature: '11.9" Portrait Display', luxury: '"Baby S-Class" Design', scores: { price: 8, power: 6, luxury: 7, tech: 8 }, photo: 'https://placehold.co/200x120/7F854D/FFFFFF?text=C-Class' },
+        { id: 3, name: 'E-Class', type: 'Sedan', price: '₹90 Lakh', priceVal: 90, engine: '2.0L Petrol / 2.0L Diesel', power: 194, feature: 'MBUX Superscreen', luxury: 'Rear Seat Comfort', scores: { price: 7, power: 5, luxury: 8, tech: 9 }, photo: 'https://placehold.co/200x120/46382C/FFFFFF?text=E-Class' },
+        { id: 4, name: 'S-Class', type: 'Sedan', price: '₹2.05 Crore', priceVal: 205, engine: '3.0L Petrol / 3.0L Diesel', power: 362, feature: 'Rear Axle Steering', luxury: 'Burmester® 4D Sound', scores: { price: 4, power: 8, luxury: 10, tech: 10 }, photo: 'https://placehold.co/200x120/F8D86A/FFFFFF?text=S-Class' },
+        { id: 5, name: 'GLA', type: 'SUV', price: '₹60 Lakh', priceVal: 60, engine: '1.3L Petrol / 2.0L Diesel', power: 161, feature: 'Compact & Agile', luxury: 'Entry-level SUV luxury', scores: { price: 8.5, power: 4, luxury: 5, tech: 6 }, photo: 'https://placehold.co/200x120/F46C49/FFFFFF?text=GLA' },
+        { id: 6, name: 'GLB', type: 'SUV', price: '₹75 Lakh', priceVal: 75, engine: '1.3L Petrol / 2.0L Diesel', power: 188, feature: 'Optional 7-Seater', luxury: 'Versatile interior', scores: { price: 7.5, power: 5, luxury: 6, tech: 7 }, photo: 'https://placehold.co/200x120/7F854D/FFFFFF?text=GLB' },
+        { id: 7, name: 'GLC', type: 'SUV', price: '₹87 Lakh', priceVal: 87, engine: '2.0L Petrol / 2.0L Diesel', power: 255, feature: 'Balanced Luxury & Size', luxury: 'Premium cabin materials', scores: { price: 7, power: 7, luxury: 7, tech: 8 }, photo: 'https://placehold.co/200x120/46382C/FFFFFF?text=GLC' },
+        { id: 8, name: 'GLE', type: 'SUV', price: '₹1.15 Crore', priceVal: 115, engine: '2.0L Diesel / 3.0L Diesel', power: 265, feature: 'Advanced Driving Assists', luxury: 'Spacious & refined', scores: { price: 6, power: 7.5, luxury: 8, tech: 9 }, photo: 'https://placehold.co/200x120/F8D86A/FFFFFF?text=GLE' },
+        { id: 9, name: 'GLS', type: 'SUV', price: '₹1.55 Crore', priceVal: 155, engine: '3.0L Petrol / 3.0L Diesel', power: 362, feature: '"S-Class of SUVs"', luxury: 'Ultimate SUV comfort', scores: { price: 5, power: 8, luxury: 9.5, tech: 9.5 }, photo: 'https://placehold.co/200x120/F46C49/FFFFFF?text=GLS' },
+        { id: 10, name: 'G-Class', type: 'SUV', price: '₹3 Crore', priceVal: 300, engine: '3.0L Diesel / 4.0L Petrol', power: 326, feature: 'Iconic Off-Road Legend', luxury: 'Rugged luxury statement', scores: { price: 2, power: 8, luxury: 9, tech: 8 }, photo: 'https://placehold.co/200x120/7F854D/FFFFFF?text=G-Class' },
+        { id: 11, name: 'EQB', type: 'Electric', price: '₹86 Lakh', priceVal: 86, engine: 'Electric Motor', power: 225, feature: '~423 km Range (WLTP)', luxury: '7-Seater EV', scores: { price: 7, power: 6, luxury: 6.5, tech: 8 }, photo: 'https://placehold.co/200x120/46382C/FFFFFF?text=EQB' },
+        { id: 12, name: 'EQE SUV', type: 'Electric', price: '₹1.60 Crore', priceVal: 160, engine: 'Electric Motor', power: 402, feature: '~550 km Range (WLTP)', luxury: 'MBUX Hyperscreen Option', scores: { price: 5, power: 8.5, luxury: 8.5, tech: 9.5 }, photo: 'https://placehold.co/200x120/F8D86A/FFFFFF?text=EQE+SUV' },
+        { id: 13, name: 'EQS', type: 'Electric', price: '₹1.85 Crore', priceVal: 185, engine: 'Electric Motor', power: 516, feature: '~857 km Range (WLTP)', luxury: 'Pinnacle of EV Luxury', scores: { price: 4.5, power: 9, luxury: 10, tech: 10 }, photo: 'https://placehold.co/200x120/F46C49/FFFFFF?text=EQS' },
+    ];
+
+    let comparisonItems = [];
+    let comparisonChart = null;
+    const vehicleTableBody = document.getElementById('vehicle-table-body');
+    const comparisonContent = document.getElementById('comparison-content');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+
+    const renderTable = (filter = 'all') => {
+        vehicleTableBody.innerHTML = '';
+        const filteredData = filter === 'all' ? vehicleData : vehicleData.filter(v => v.type === filter);
+        
+        filteredData.forEach(vehicle => {
+            const isComparing = comparisonItems.some(item => item.id === vehicle.id);
+            const buttonText = isComparing ? 'Comparing' : 'Add to Compare';
+            const buttonClasses = isComparing 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-[#F46C49] hover:bg-[#ff9c85]';
+            
+            const rowHTML = `
+                <tr>
+                    <td><img src="${vehicle.photo}" alt="${vehicle.name}" class="car-image"></td>
+                    <td><a href="#" onclick="searchCar('${vehicle.name}'); return false;" class="text-[#4A4A4A] hover:underline font-bold">${vehicle.name}</a></td>
+                    <td>${vehicle.type}</td>
+                    <td>${vehicle.price}</td>
+                    <td>${vehicle.engine}</td>
+                    <td>~${vehicle.power} bhp</td>
+                    <td>${vehicle.feature}</td>
+                    <td>
+                        <button onclick="toggleCompare(${vehicle.id})" id="btn-${vehicle.id}" class="text-white font-bold py-2 px-4 rounded-lg transition-colors ${buttonClasses}">
+                            ${buttonText}
+                        </button>
+                    </td>
+                </tr>
+            `;
+            vehicleTableBody.innerHTML += rowHTML;
+        });
+    };
+
+    const renderComparison = () => {
+        if (comparisonItems.length === 0) {
+            comparisonContent.innerHTML = `<p class="text-xl text-center text-[#F46C49]">Select up to 3 vehicles from the table to compare them.</p>`;
+            return;
+        }
+
+        let tableHeaders = '';
+        let tablePrice = '';
+        let tableEngine = '';
+        let tablePower = '';
+        let tableFeature = '';
+
+        comparisonItems.forEach(item => {
+            tableHeaders += `<th class="p-4 bg-white border-b border-l text-[#4A4A4A]">${item.name}<button onclick="toggleCompare(${item.id})" class="ml-2 text-red-500 font-bold">✖</button></th>`;
+            tablePrice += `<td class="p-4 border-b border-l">${item.price}</td>`;
+            tableEngine += `<td class="p-4 border-b border-l">${item.engine}</td>`;
+            tablePower += `<td class="p-4 border-b border-l">~${item.power} bhp</td>`;
+            tableFeature += `<td class="p-4 border-b border-l">${item.feature}</td>`;
+        });
+
+        const comparisonHTML = `
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                <div class="bg-white rounded-xl shadow-lg p-6 overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr>
+                                <th class="p-4 bg-[#F46C49] text-white rounded-tl-lg border-b">Feature</th>
+                                ${tableHeaders}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="bg-gray-50"><td class="p-4 font-bold border-b">Price</td>${tablePrice}</tr>
+                            <tr><td class="p-4 font-bold border-b">Engine Specs</td>${tableEngine}</tr>
+                            <tr class="bg-gray-50"><td class="p-4 font-bold border-b">Power</td>${tablePower}</tr>
+                            <tr><td class="p-4 font-bold">Key Feature</td>${tableFeature}</tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h4 class="text-xl font-bold text-center text-[#4A4A4A] mb-4">Feature Radar</h4>
+                    <div class="chart-container">
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        `;
+        comparisonContent.innerHTML = comparisonHTML;
+        renderRadarChart();
+    };
+
+    const renderRadarChart = () => {
+        const ctx = document.getElementById('comparisonChart').getContext('2d');
+        const colors = ['#F46C49', '#0A79DF', '#7F854D'];
+        const datasets = comparisonItems.map((item, index) => {
+            const color = colors[index % colors.length];
+            return {
+                label: item.name,
+                data: [
+                    10 - item.scores.price, 
+                    item.scores.power, 
+                    item.scores.luxury, 
+                    item.scores.tech
+                ],
+                backgroundColor: `${color}40`,
+                borderColor: color,
+                pointBackgroundColor: color,
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: color,
+                borderWidth: 2
+            };
+        });
+        
+        if(comparisonChart) {
+            comparisonChart.destroy();
+        }
+
+        comparisonChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Price (Inverted)', 'Power', 'Luxury', 'Technology'],
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: '#EFEFEF' },
+                        grid: { color: '#EFEFEF' },
+                        pointLabels: { font: { size: 14, weight: 'bold' }, color: '#4A4A4A' },
+                        ticks: {
+                            backdropColor: '#F8F4E3',
+                            color: '#4A4A4A',
+                            beginAtZero: true,
+                            max: 10,
+                            stepSize: 2
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                         labels: {
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    };
+
+    window.toggleCompare = (id) => {
+        const index = comparisonItems.findIndex(item => item.id === id);
+        if (index > -1) {
+            comparisonItems.splice(index, 1);
+        } else {
+            if (comparisonItems.length < 3) {
+                const vehicleToAdd = vehicleData.find(v => v.id === id);
+                comparisonItems.push(vehicleToAdd);
+            } else {
+                alert("You can compare a maximum of 3 vehicles.");
+                return;
+            }
+        }
+        updateCompareButtons();
+        renderComparison();
+    };
+
+    window.searchCar = (carName) => {
+        const query = `Mercedes-Benz ${carName} price in Noida`;
+        window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+    };
+
+    const updateCompareButtons = () => {
+        document.querySelectorAll('[id^="btn-"]').forEach(button => {
+            const id = parseInt(button.id.split('-')[1]);
+            const isComparing = comparisonItems.some(item => item.id === id);
+            button.textContent = isComparing ? 'Comparing' : 'Add to Compare';
+            if (isComparing) {
+                button.classList.remove('bg-[#F46C49]', 'hover:bg-[#ff9c85]');
+                button.classList.add('bg-gray-400', 'cursor-not-allowed');
+            } else {
+                button.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                button.classList.add('bg-[#F46C49]', 'hover:bg-[#ff9c85]');
+            }
+        });
+    };
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            const filter = button.getAttribute('data-filter');
+            renderTable(filter);
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderTable();
+        renderComparison();
+    });
+</script>
+
+</body>
+</html>
