@@ -1,329 +1,156 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Interview Platform | ElevenLabs Overview</title>
+    <title>Vexa AI Interview | Consent Form</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Calm Harmony -->
-    <!-- Application Structure Plan: A single-page, top-down scrolling application with a sticky navigation bar for quick access to key sections. The structure is designed to logically address the client's questions, starting with the basics (Platform & Access), moving to the most critical area (Data Governance & GDPR), clarifying data usage (Processing), and ending with actionable steps (Transparency & Consent). This narrative flow builds confidence by tackling the most sensitive legal and ethical concerns with dedicated, detailed sections, making the information digestible and reassuring for a non-technical audience. An interactive FAQ at the end reinforces key takeaways. -->
+    <!-- Chosen Palette: Corporate Trust -->
+    <!-- Application Structure Plan: A single, focused consent screen designed as a gateway to the interview. The structure prioritizes transparency by first presenting the three most critical and unusual aspects of the interview (AI Moderator, Voice Recording, Data Transfer) in an easy-to-scan format. This is followed by the full, scrollable Terms & Conditions for legal completeness. The flow concludes with a disabled 'Agree & Continue' button that is only enabled upon the user actively checking the consent box. This ensures informed and deliberate consent. -->
     <!-- Visualization & Content Choices: 
-        - Platform Overview: Goal(Inform) -> Key Info Cards -> Interaction(None) -> Justification: Quickly provides top-level answers using clear iconography and concise text.
-        - Respondent Access: Goal(Inform) -> Numbered Step Diagram (HTML/CSS) -> Interaction(Subtle hover effects) -> Justification: Visually simplifies the user journey, showing how easy it is for participants to join.
-        - Data Governance: Goal(Reassure/Detail) -> Themed content blocks with icons -> Interaction(None) -> Justification: Breaks down complex GDPR topics into digestible, themed sections (Storage, Security, Roles) to avoid overwhelming the user.
-        - Data Processing: Goal(Clarify) -> Two-column "Do / Don't" layout -> Interaction(None) -> Justification: Provides an unambiguous, at-a-glance summary of how data is and isn't used, directly addressing concerns about model training.
-        - Transparency Checklist: Goal(Action) -> Interactive checklist -> Interaction(Click to toggle checkmark) -> Justification: Turns abstract compliance requirements into a tangible, actionable tool for the client.
-        - Library/Method: Vanilla JS for interactions, Tailwind CSS for all styling and layout.
+        - Key Information Cards: Goal(Inform/Alert) -> Icon + Text Cards (HTML/Tailwind) -> Interaction(None) -> Justification: Immediately draws user attention to the most important disclosures, preventing them from being missed in the full text.
+        - Scrollable T&C Container: Goal(Detail/Compliance) -> Styled Scrollable Div (HTML/CSS) -> Interaction(Scrolling) -> Justification: Provides the full legal text in a digestible format without overwhelming the initial view.
+        - Interactive Consent Checkbox: Goal(Action/Consent) -> Checkbox + Disabled Button (HTML/JS) -> Interaction(Clicking checkbox enables button) -> Justification: Creates a clear, auditable user action that confirms their agreement, preventing accidental progression.
+        - Library/Method: Vanilla JS for interaction, Tailwind CSS for all styling.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #FDFBF8;
-            color: #333D4B;
+            background-color: #f8fafc; /* slate-50 */
         }
-        .nav-link {
-            transition: color 0.2s, border-color 0.2s;
-            border-bottom: 2px solid transparent;
-        }
-        .nav-link.active, .nav-link:hover {
-            color: #2563EB;
-            border-bottom-color: #2563EB;
-        }
-        .content-card {
-            background-color: #FFFFFF;
-            border: 1px solid #E5E7EB;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-        }
-        .accordion-header {
-            cursor: pointer;
-        }
-        .accordion-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-        }
-        .checklist-item.checked .check-icon {
-            background-color: #2563EB;
-            color: white;
-        }
-        .checklist-item.checked .checklist-text {
-            text-decoration: line-through;
-            opacity: 0.7;
+        .terms-container {
+            max-height: 250px;
+            overflow-y: auto;
+            background-color: #f1f5f9; /* slate-100 */
+            border: 1px solid #e2e8f0; /* slate-200 */
         }
     </style>
 </head>
-<body class="antialiased">
+<body class="flex items-center justify-center min-h-screen bg-slate-50 p-4">
 
-    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 border-b border-gray-200">
-        <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center">
-                    <span class="font-bold text-xl text-blue-600">AI Survey Details</span>
+    <main class="w-full max-w-3xl bg-white rounded-xl shadow-lg border border-slate-200">
+        <div class="p-6 md:p-8">
+            <header class="text-center pb-6 border-b border-slate-200">
+                <div class="flex justify-center items-center gap-4 text-slate-500 mb-4">
+                    <span class="font-semibold">BrandEigen</span>
+                    <span>X</span>
+                    <span class="font-bold text-xl text-slate-800">VEXA</span>
+                    <span>by</span>
+                    <span class="font-semibold">greybatter</span>
                 </div>
-                <div class="hidden md:block">
-                    <div class="ml-10 flex items-baseline space-x-4">
-                        <a href="#platform" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Platform</a>
-                        <a href="#access" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Access</a>
-                        <a href="#data" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Data Governance</a>
-                        <a href="#processing" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Processing</a>
-                        <a href="#consent" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Consent</a>
-                        <a href="#faq" class="nav-link px-3 py-2 rounded-md text-sm font-medium">FAQ</a>
+                <h1 class="text-2xl md:text-3xl font-bold text-slate-800">Research Interview: Terms of Participation</h1>
+                <p class="mt-2 text-slate-600">Please review and agree to the following before we begin.</p>
+            </header>
+
+            <section class="my-6">
+                <h2 class="text-lg font-semibold text-slate-700 mb-4 text-center">Key Information at a Glance</h2>
+                <div class="grid md:grid-cols-3 gap-4 text-center">
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                        <div class="text-3xl mb-2">🤖</div>
+                        <h3 class="font-semibold text-sm text-slate-800">AI Moderator</h3>
+                        <p class="text-xs text-slate-500">Your interview will be conducted by an AI, not a human.</p>
                     </div>
-                </div>
-            </div>
-        </nav>
-    </header>
-
-    <main class="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-
-        <section class="text-center mb-16">
-            <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-gray-800">Answering Your Questions</h1>
-            <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">This report provides a comprehensive overview of the proposed AI interview platform, <strong class="text-blue-600">ElevenLabs</strong>, with a focus on data protection, respondent access, and compliance with UK regulations.</p>
-        </section>
-
-        <div class="space-y-16">
-
-            <section id="platform" class="scroll-mt-20">
-                <h2 class="text-3xl font-bold mb-6 text-gray-800">1. The AI Platform</h2>
-                <p class="text-lg text-gray-600 mb-8">The proposed solution utilizes the advanced conversational AI capabilities of ElevenLabs, a leading third-party provider in voice synthesis and AI interaction. It is not a proprietary platform but an integration of their robust, market-tested API.</p>
-                <div class="grid md:grid-cols-3 gap-6 text-center">
-                    <div class="content-card p-6">
-                        <div class="text-4xl mb-3">🏢</div>
-                        <h3 class="text-lg font-semibold mb-2">Third-Party Provider</h3>
-                        <p class="text-sm text-gray-500">The platform is powered by <a href="https://elevenlabs.io" target="_blank" class="text-blue-600 hover:underline">ElevenLabs Inc.</a>, a well-established company specializing in realistic voice AI technology.</p>
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                        <div class="text-3xl mb-2">🎙️</div>
+                        <h3 class="font-semibold text-sm text-slate-800">Voice Recording</h3>
+                        <p class="text-xs text-slate-500">Your voice will be recorded and transcribed for analysis.</p>
                     </div>
-                    <div class="content-card p-6">
-                        <div class="text-4xl mb-3">☁️</div>
-                        <h3 class="text-lg font-semibold mb-2">API-Based Solution</h3>
-                        <p class="text-sm text-gray-500">We leverage their API to build a custom interview experience. This means we control the user interface and data flow, calling their service only for AI processing.</p>
-                    </div>
-                    <div class="content-card p-6">
-                        <div class="text-4xl mb-3">🌐</div>
-                        <h3 class="text-lg font-semibold mb-2">Established & Secure</h3>
-                        <p class="text-sm text-gray-500">Using a reputable provider ensures high uptime, security best practices, and a mature technology stack for a reliable respondent experience.</p>
-                    </div>
-                </div>
-            </section>
-
-            <section id="access" class="scroll-mt-20">
-                <h2 class="text-3xl font-bold mb-6 text-gray-800">2. Respondent Access</h2>
-                <p class="text-lg text-gray-600 mb-8">The process for respondents is designed to be as simple and accessible as possible. No downloads or complex installations are required, ensuring a low barrier to entry for participants.</p>
-                <div class="content-card p-8">
-                    <div class="flex flex-col md:flex-row gap-6 items-center">
-                        <div class="flex-1 space-y-4">
-                            <div class="flex items-start">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">1</div>
-                                <div class="ml-4">
-                                    <h4 class="font-semibold text-lg">Receive a Link</h4>
-                                    <p class="text-gray-600">Participants receive a unique, secure web link via email, just as they would for a standard online survey.</p>
-                                </div>
-                            </div>
-                            <div class="flex items-start">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">2</div>
-                                <div class="ml-4">
-                                    <h4 class="font-semibold text-lg">Open in Browser</h4>
-                                    <p class="text-gray-600">The link opens directly in their web browser (e.g., Chrome, Firefox, Safari). There is no app to download or software to install.</p>
-                                </div>
-                            </div>
-                            <div class="flex items-start">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">3</div>
-                                <div class="ml-4">
-                                    <h4 class="font-semibold text-lg">Grant Mic Access & Start</h4>
-                                    <p class="text-gray-600">After reviewing the consent information, they grant one-time microphone permission to the browser and begin the conversational interview.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex-shrink-0 text-6xl md:text-9xl p-4 opacity-10">
-                            🔗 → 💻 → 🎙️
-                        </div>
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                        <div class="text-3xl mb-2">🇺🇸</div>
+                        <h3 class="font-semibold text-sm text-slate-800">Data Processing</h3>
+                        <p class="text-xs text-slate-500">Data is processed in the US by our partner, ElevenLabs Inc.</p>
                     </div>
                 </div>
             </section>
             
-            <section id="data" class="scroll-mt-20">
-                <h2 class="text-3xl font-bold mb-6 text-gray-800">3. Data Governance & UK GDPR Compliance</h2>
-                <p class="text-lg text-gray-600 mb-8">Data protection is paramount. As the survey involves UK-based respondents, all data handling must comply with the UK Data Protection Act 2018 and UK GDPR. Here is a breakdown of how data is managed.</p>
-                <div class="space-y-6">
-                    <div class="content-card p-6">
-                        <h3 class="font-semibold text-xl mb-3">Roles & Responsibilities</h3>
-                        <p class="text-gray-600"><strong class="text-gray-800">You (The Client) are the Data Controller.</strong> You determine the purpose of the data collection and are ultimately responsible for it. <strong class="text-gray-800">We (The Agency) and ElevenLabs are Data Processors.</strong> We process the data on your behalf, following your instructions and our legal agreements.</p>
-                    </div>
-                    <div class="content-card p-6">
-                        <h3 class="font-semibold text-xl mb-3">Data Storage & International Transfers</h3>
-                        <p class="text-gray-600 mb-4">ElevenLabs primarily uses secure data centers in the <strong class="text-gray-800">United States</strong>. To ensure legal compliance for transferring UK personal data, specific measures are essential:</p>
-                        <ul class="list-disc list-inside space-y-2 text-gray-600">
-                            <li>A <strong class="text-gray-800">Data Processing Addendum (DPA)</strong> must be in place with ElevenLabs.</li>
-                            <li>This DPA must incorporate the <strong class="text-gray-800">UK's International Data Transfer Agreement (IDTA)</strong> or Addendum to the EU's Standard Contractual Clauses (SCCs). This provides the legal safeguard required under UK GDPR for data transfers outside the UK.</li>
-                            <li>All respondent data (audio recordings, transcripts) will be held by us, the agency, on your behalf, in secure, UK/EU-based storage. Data is only sent to ElevenLabs for the real-time processing required for the conversation.</li>
-                        </ul>
-                    </div>
-                    <div class="content-card p-6">
-                        <h3 class="font-semibold text-xl mb-3">Data Security</h3>
-                        <p class="text-gray-600">Data is encrypted both in transit (using TLS) between the respondent's browser, our servers, and ElevenLabs, and at rest on secure cloud infrastructure. Access to raw data is strictly limited to authorized personnel for project delivery purposes.</p>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="processing" class="scroll-mt-20">
-                <h2 class="text-3xl font-bold mb-6 text-gray-800">4. How the AI Platform Processes Data</h2>
-                <p class="text-lg text-gray-600 mb-8">The purpose of data processing is clearly defined and limited. We ensure data is used solely for the execution of the research study, not for unauthorized secondary purposes.</p>
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="content-card p-6 border-l-4 border-green-500">
-                        <h3 class="text-xl font-semibold text-green-700 mb-3">What the AI WILL Do</h3>
-                        <ul class="list-disc list-inside space-y-2 text-gray-600">
-                            <li>Process audio from the respondent in real-time to understand their spoken words.</li>
-                            <li>Generate a relevant, human-like audio response based on the interview script.</li>
-                            <li>Act purely as a conversational moderator to conduct the depth interview.</li>
-                            <li>Create a transcript of the conversation for analysis by our researchers.</li>
-                        </ul>
-                    </div>
-                    <div class="content-card p-6 border-l-4 border-red-500">
-                        <h3 class="text-xl font-semibold text-red-700 mb-3">What the AI WILL NOT Do</h3>
-                        <ul class="list-disc list-inside space-y-2 text-gray-600">
-                            <li>Share respondent data with any other third parties.</li>
-                            <li>Use the conversation data to train or improve its own public AI models without explicit, separate consent. (Enterprise API usage typically isolates data).</li>
-                            <li>Use the data for any purpose beyond conducting the interview and providing the transcript as commissioned.</li>
-                        </ul>
+            <section class="my-6">
+                 <h2 class="text-lg font-semibold text-slate-700 mb-3 text-center">Full Terms and Conditions</h2>
+                <div id="terms" class="terms-container p-4 rounded-lg">
+                    <div>
+                        <h2 class="text-lg font-semibold mb-2">1. Introduction</h2>
+                        <p class="text-sm text-slate-600 mb-4">This interview is a market research project conducted by <strong>Greybatter Ltd.</strong> (as Vexa) on behalf of our client, <strong>BrandEigen</strong>. The purpose is to gather insights into consumer perceptions and experiences.</p>
+                        
+                        <h2 class="text-lg font-semibold mb-2">2. Purpose of Data Collection</h2>
+                        <p class="text-sm text-slate-600 mb-4">The data collected will be used solely for market research and analysis by BrandEigen and Greybatter. Final research findings will be aggregated and anonymised; your individual responses will not be personally identifiable in the final report.</p>
+
+                        <h2 class="text-lg font-semibold mb-2">3. AI Moderator Disclosure</h2>
+                        <p class="text-sm text-slate-600 mb-4">You acknowledge and agree that this interview will be conducted by an <strong>AI (Artificial Intelligence) moderator</strong>. The AI is designed to have a natural conversation and guide the interview based on a pre-defined script.</p>
+
+                        <h2 class="text-lg font-semibold mb-2">4. Data Collected</h2>
+                        <p class="text-sm text-slate-600 mb-4">By participating, you consent to the collection of the following data:
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li><strong>Audio Data:</strong> A recording of your spoken words.</li>
+                                <li><strong>Transcript Data:</strong> A text-based transcript of the conversation.</li>
+                                <li><strong>Survey Responses:</strong> Any data you provide by responding to the questions.</li>
+                            </ul>
+                        </p>
+
+                        <h2 class="text-lg font-semibold mb-2">5. Data Processing and Storage</h2>
+                        <p class="text-sm text-slate-600 mb-4">Your data will be processed as follows:
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li><strong>Third-Party Processor:</strong> Your audio data will be processed by <strong>ElevenLabs Inc.</strong>, a third-party AI technology provider, to facilitate the live conversation.</li>
+                                <li><strong>Data Transfers:</strong> As ElevenLabs Inc. is based in the United States, your data will be transferred and processed in the US. This is conducted under a legally compliant framework (UK's International Data Transfer Agreement - IDTA) that provides safeguards equivalent to UK data protection regulations.</li>
+                                <li><strong>No Secondary Use:</strong> Your data will not be used by ElevenLabs Inc. to train its public AI models.</li>
+                                <li><strong>Storage:</strong> All recordings and transcripts will be securely stored by Greybatter Ltd. on behalf of BrandEigen and will be retained only for the duration required for this research project.</li>
+                            </ul>
+                        </p>
+                        
+                        <h2 class="text-lg font-semibold mb-2">6. Your Data Protection Rights</h2>
+                        <p class="text-sm text-slate-600 mb-4">Under UK GDPR, you have the right to request access to, correction of, or erasure of your data. To exercise these rights, please contact Greybatter at [Insert Designated Contact Email Address Here].</p>
+                        
+                        <h2 class="text-lg font-semibold mb-2">7. Consent</h2>
+                        <p class="text-sm text-slate-600">By proceeding, you confirm that you have read, understood, and agree to these Terms and Conditions. You explicitly consent to the collection, processing, and transfer of your data as described.</p>
                     </div>
                 </div>
             </section>
 
-            <section id="consent" class="scroll-mt-20">
-                <h2 class="text-3xl font-bold mb-6 text-gray-800">5. Respondent Transparency & Consent</h2>
-                <p class="text-lg text-gray-600 mb-8">Complete transparency is non-negotiable. The consent process must be updated to explicitly cover all aspects of the AI-led interview. The following points must be clearly communicated before a respondent participates.</p>
-                <div class="content-card p-8">
-                    <h3 class="text-xl font-semibold mb-4">Participant Information Checklist:</h3>
-                    <div id="checklist" class="space-y-3">
-                        <div class="checklist-item flex items-center p-3 rounded-lg transition-all duration-200 hover:bg-gray-50 cursor-pointer">
-                            <div class="check-icon w-6 h-6 mr-4 rounded-md border-2 border-gray-300 flex items-center justify-center text-white transition-all duration-200">
-                                <span class="check-symbol">✔</span>
-                            </div>
-                            <span class="checklist-text flex-1 text-gray-700">Explain that the interview will be conducted by an AI moderator, not a human.</span>
-                        </div>
-                         <div class="checklist-item flex items-center p-3 rounded-lg transition-all duration-200 hover:bg-gray-50 cursor-pointer">
-                            <div class="check-icon w-6 h-6 mr-4 rounded-md border-2 border-gray-300 flex items-center justify-center text-white transition-all duration-200">
-                                <span class="check-symbol">✔</span>
-                            </div>
-                            <span class="checklist-text flex-1 text-gray-700">Name the third-party provider (ElevenLabs Inc.).</span>
-                        </div>
-                         <div class="checklist-item flex items-center p-3 rounded-lg transition-all duration-200 hover:bg-gray-50 cursor-pointer">
-                            <div class="check-icon w-6 h-6 mr-4 rounded-md border-2 border-gray-300 flex items-center justify-center text-white transition-all duration-200">
-                                <span class="check-symbol">✔</span>
-                            </div>
-                            <span class="checklist-text flex-1 text-gray-700">State that their voice data will be processed for the conversation.</span>
-                        </div>
-                        <div class="checklist-item flex items-center p-3 rounded-lg transition-all duration-200 hover:bg-gray-50 cursor-pointer">
-                            <div class="check-icon w-6 h-6 mr-4 rounded-md border-2 border-gray-300 flex items-center justify-center text-white transition-all duration-200">
-                                <span class="check-symbol">✔</span>
-                            </div>
-                            <span class="checklist-text flex-1 text-gray-700">Inform them that data is processed in the US under legal safeguards (UK IDTA).</span>
-                        </div>
-                        <div class="checklist-item flex items-center p-3 rounded-lg transition-all duration-200 hover:bg-gray-50 cursor-pointer">
-                            <div class="check-icon w-6 h-6 mr-4 rounded-md border-2 border-gray-300 flex items-center justify-center text-white transition-all duration-200">
-                                <span class="check-symbol">✔</span>
-                            </div>
-                            <span class="checklist-text flex-1 text-gray-700">Clarify who holds their data (the client) and for how long.</span>
-                        </div>
-                        <div class="checklist-item flex items-center p-3 rounded-lg transition-all duration-200 hover:bg-gray-50 cursor-pointer">
-                            <div class="check-icon w-6 h-6 mr-4 rounded-md border-2 border-gray-300 flex items-center justify-center text-white transition-all duration-200">
-                                <span class="check-symbol">✔</span>
-                            </div>
-                            <span class="checklist-text flex-1 text-gray-700">Reiterate their data protection rights (access, erasure, etc.).</span>
-                        </div>
+            <footer class="pt-6 border-t border-slate-200">
+                <div class="flex items-start">
+                    <input id="consent-checkbox" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                    <label for="consent-checkbox" class="ml-3 text-sm text-slate-700">
+                        I have read, understood, and agree to the Terms and Conditions. I consent to participate in this AI-moderated interview.
+                    </label>
+                </div>
+                <div class="mt-6 text-center">
+                    <button id="agree-button" disabled class="w-full md:w-auto bg-blue-600 text-white font-bold py-3 px-12 rounded-lg transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-slate-300 disabled:cursor-not-allowed">
+                        Agree & Continue
+                    </button>
+                    <div id="confirmation-message" class="mt-4 text-green-700 font-semibold hidden">
+                        Thank you for your consent. The interview will begin shortly.
                     </div>
                 </div>
-            </section>
-            
-            <section id="faq" class="scroll-mt-20">
-                <h2 class="text-3xl font-bold mb-6 text-gray-800">6. Frequently Asked Questions</h2>
-                 <div class="space-y-4">
-                    <div class="accordion-item content-card">
-                        <div class="accordion-header flex justify-between items-center p-5">
-                            <h3 class="font-semibold text-lg">So, is this our own app or from ElevenLabs?</h3>
-                            <span class="accordion-icon text-2xl font-light text-blue-500 transform transition-transform duration-300">+</span>
-                        </div>
-                        <div class="accordion-content">
-                            <p class="p-5 pt-0 text-gray-600">It's a custom-built web application that uses ElevenLabs' AI technology via their API. Think of it like building a house (our app) with specialized bricks from a specific company (ElevenLabs).</p>
-                        </div>
-                    </div>
-                    <div class="accordion-item content-card">
-                        <div class="accordion-header flex justify-between items-center p-5">
-                            <h3 class="font-semibold text-lg">Do respondents need a special computer or phone?</h3>
-                            <span class="accordion-icon text-2xl font-light text-blue-500 transform transition-transform duration-300">+</span>
-                        </div>
-                        <div class="accordion-content">
-                            <p class="p-5 pt-0 text-gray-600">No. Any modern device (computer, tablet, smartphone) with an internet connection and a web browser like Chrome, Safari, or Firefox will work. No downloads are needed.</p>
-                        </div>
-                    </div>
-                    <div class="accordion-item content-card">
-                        <div class="accordion-header flex justify-between items-center p-5">
-                            <h3 class="font-semibold text-lg">Is it legal to send UK respondent data to the US?</h3>
-                            <span class="accordion-icon text-2xl font-light text-blue-500 transform transition-transform duration-300">+</span>
-                        </div>
-                        <div class="accordion-content">
-                            <p class="p-5 pt-0 text-gray-600">Yes, provided the correct legal framework is in place. Under UK GDPR, this is achieved by signing a Data Processing Addendum that includes the UK's International Data Transfer Agreement (IDTA). This ensures the data is protected to UK standards, even when processed abroad. This is a mandatory step.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
+            </footer>
         </div>
     </main>
 
-    <footer class="bg-gray-800 mt-20">
-        <div class="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-gray-400 text-sm">
-            <p>&copy; 2025 | Confidential Information for Client Review</p>
-            <p>This report is based on publicly available information from ElevenLabs as of September 2025.</p>
-        </div>
-    </footer>
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const sections = document.querySelectorAll('section[id]');
-            const navLinks = document.querySelectorAll('nav a.nav-link');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        navLinks.forEach(link => {
-                            link.classList.toggle('active', link.getAttribute('href').substring(1) === entry.target.id);
-                        });
-                    }
-                });
-            }, { rootMargin: '-20% 0px -70% 0px' });
-            sections.forEach(section => observer.observe(section));
+            const consentCheckbox = document.getElementById('consent-checkbox');
+            const agreeButton = document.getElementById('agree-button');
+            const confirmationMessage = document.getElementById('confirmation-message');
 
-            const accordionItems = document.querySelectorAll('.accordion-item');
-            accordionItems.forEach(item => {
-                const header = item.querySelector('.accordion-header');
-                const content = item.querySelector('.accordion-content');
-                const icon = header.querySelector('.accordion-icon');
-                header.addEventListener('click', () => {
-                    const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
-                    if (isOpen) {
-                        content.style.maxHeight = '0px';
-                        icon.style.transform = 'rotate(0deg)';
-                        icon.textContent = '+';
-                    } else {
-                        content.style.maxHeight = content.scrollHeight + 'px';
-                        icon.style.transform = 'rotate(45deg)';
-                        icon.textContent = '×';
-                    }
-                });
+            function checkConsent() {
+                agreeButton.disabled = !consentCheckbox.checked;
+            }
+
+            consentCheckbox.addEventListener('change', checkConsent);
+            
+            agreeButton.addEventListener('click', () => {
+                if (consentCheckbox.checked) {
+                    agreeButton.style.display = 'none';
+                    consentCheckbox.parentElement.style.display = 'none';
+                    confirmationMessage.style.display = 'block';
+                    // In a real application, you would redirect or start the interview here.
+                    // For example: window.location.href = '/start-interview-page';
+                }
             });
 
-            const checklistItems = document.querySelectorAll('.checklist-item');
-            checklistItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    item.classList.toggle('checked');
-                });
-            });
+            checkConsent();
         });
     </script>
-
 </body>
 </html>
